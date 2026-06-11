@@ -1,88 +1,69 @@
-// import React from 'react';
+import React from 'react';
+import { Code, Trophy, LineChart, Code2 } from 'lucide-react';
 
-// const AboutUs = () => {
-//     return (
-//         <div className="max-w-4xl mx-auto p-6 bg-gray-900">
-//             <header className="text-center mb-12">
-//                 <h1 className="text-4xl font-bold text-white">TLE Profiles</h1>
-//                 <p className="text-lg text-yellow-600 mt-4">All Your Coding Profiles in One Place</p>
-//             </header>
-//             <section className="mb-8">
-//                 <h2 className="text-2xl font-semibold text-yellow-600 mb-4">About Us</h2>
-//                 <p className="text-white leading-relaxed mb-4">
-//                     Welcome to TLE Profiles, your one-stop solution for managing and showcasing all your coding profiles. Our platform consolidates your coding activities from various sites and provides a comprehensive overview of your coding journey. Whether you're a competitive programmer, a developer, or a learner, TLE Profiles helps you keep track of your progress and achievements in one place.
-//                 </p>
-//                 <p className="text-white leading-relaxed">
-//                     Our mission is to simplify the way you manage your coding profiles. We understand the challenges of maintaining multiple profiles across different platforms. TLE Profiles aims to bring all your coding accomplishments under one roof, making it easier for you to share your skills with the world.
-//                 </p>
-//             </section>
-//             <section className="mb-8">
-//                 <h2 className="text-2xl font-semibold text-yellow-600 mb-4">Features</h2>
-//                 <ul className="list-disc list-inside text-white">
-//                     <li className="mb-2">Aggregate coding profiles from multiple platforms</li>
-//                     <li className="mb-2">Track your progress and achievements over time</li>
-//                     <li className="mb-2">Compare your performance with peers</li>
-//                     <li className="mb-2">Receive insights and analytics on your coding activities</li>
-//                     <li className="mb-2">Showcase your skills and projects in a unified profile</li>
-//                 </ul>
-//             </section>
-//             <section className="mb-8">
-//                 <h2 className="text-2xl font-semibold text-yellow-600 mb-4">Our Vision</h2>
-//                 <p className="text-white leading-relaxed mb-4">
-//                     At TLE Profiles, we envision a future where managing multiple coding profiles is a thing of the past. We strive to create a seamless experience for coders worldwide, enabling them to focus on what they do best - coding. Our platform aims to be the leading solution for developers to track, manage, and showcase their coding journey.
-//                 </p>
-//                 <p className="text-white leading-relaxed">
-//                     We are committed to continuous improvement and innovation. We believe in the power of community and the importance of collaboration. TLE Profiles is not just a tool; it's a community where coders can connect, share knowledge, and grow together.
-//                 </p>
-//             </section>
-//             <section>
-//                 <h2 className="text-2xl font-semibold text-yellow-600 mb-4">Contact Us</h2>
-//                 <p className="text-white leading-relaxed">
-//                     Have questions or feedback? We'd love to hear from you! Reach out to us at <a href="mailto:viveksingh27795@gmail.com" className="text-yellow-600 hover:underline"> viveksingh27795@gmail.com</a> or follow us on our social media channels. Join us in making coding profile management simpler and more efficient.
-//                 </p>
-//             </section>
-//         </div>
-//     );
-// };
-
-// export default AboutUs;
-
-
-import React, { useState } from 'react';
-
-const AboutUs = () => {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-
+const About = () => {
     return (
-        <div className="max-w-xl mx-auto mt-10">
-            <div className="bg-white rounded shadow p-6">
-                <h2 className="text-2xl font-bold mb-4 text-center">Profile</h2>
-                {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
-                {loading ? (
-                    <div className="text-center py-4">Loading...</div>
-                ) : (
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="w-24 h-24 bg-gray-200 rounded-full mb-2"></div>
-                        <div className="text-lg font-semibold">User Name</div>
-                        <div className="text-gray-500">user@email.com</div>
-                        <div className="mt-4 w-full">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-gray-100 rounded p-4 text-center">
-                                    <div className="text-2xl font-bold">123</div>
-                                    <div className="text-gray-600">Problems Solved</div>
-                                </div>
-                                <div className="bg-gray-100 rounded p-4 text-center">
-                                    <div className="text-2xl font-bold">Gold</div>
-                                    <div className="text-gray-600">LeetCode Rank</div>
-                                </div>
+        <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 animate-in fade-in duration-500">
+            <header className="text-center mb-16">
+                <div className="inline-flex items-center justify-center p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-2xl mb-4">
+                    <Code2 className="h-8 w-8 text-yellow-600 dark:text-yellow-500" />
+                </div>
+                <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                    Coders<span className="text-yellow-500">Hub</span> Profiles
+                </h1>
+                <p className="mt-4 text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
+                    All Your Coding Profiles in One Place
+                </p>
+            </header>
+
+            <div className="space-y-12">
+                <section className="bg-white dark:bg-[#0f1115] rounded-2xl p-8 shadow-sm border border-gray-200 dark:border-gray-800">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Mission</h2>
+                    <div className="space-y-4 text-gray-600 dark:text-gray-300 leading-relaxed">
+                        <p>
+                            Welcome to CodersHub Profiles, your one-stop solution for managing and showcasing all your coding profiles. Our platform consolidates your coding activities from various sites and provides a comprehensive overview of your coding journey.
+                        </p>
+                        <p>
+                            Whether you're a competitive programmer, a developer, or a learner, CodersHub helps you keep track of your progress and achievements in one place. We aim to bring all your coding accomplishments under one roof, making it easier for you to share your skills with the world.
+                        </p>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">Core Features</h2>
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <div className="bg-white dark:bg-[#0f1115] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col items-center text-center">
+                            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl mb-4">
+                                <Code size={24} />
                             </div>
+                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">Aggregate Profiles</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Combine your GitHub, LeetCode, and Codeforces stats seamlessly.</p>
+                        </div>
+                        <div className="bg-white dark:bg-[#0f1115] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col items-center text-center">
+                            <div className="p-3 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl mb-4">
+                                <LineChart size={24} />
+                            </div>
+                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">Track Progress</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">View detailed heatmaps and activity charts over time.</p>
+                        </div>
+                        <div className="bg-white dark:bg-[#0f1115] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col items-center text-center">
+                            <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-500 rounded-xl mb-4">
+                                <Trophy size={24} />
+                            </div>
+                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">Global Leaderboard</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Compare your performance with peers globally.</p>
                         </div>
                     </div>
-                )}
+                </section>
+                
+                <section className="text-center py-8">
+                    <p className="text-gray-500 dark:text-gray-400">
+                        Have questions or feedback? Reach out to us at <a href="mailto:support@codershub.com" className="text-yellow-600 dark:text-yellow-500 hover:underline font-medium">support@codershub.com</a>
+                    </p>
+                </section>
             </div>
         </div>
     );
 };
 
-export default AboutUs;
+export default About;

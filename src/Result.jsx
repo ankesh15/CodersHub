@@ -1,490 +1,452 @@
-//import { useState } from 'react'
-import moment from "moment/moment";
-import reactLogo from "./assets/react.svg";
-import "./App.css";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {useEffect, useState} from "react";
+import { useParams, Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import { Copy, CheckCircle2, Bookmark, Star, ArrowLeft, Award, ExternalLink, Printer, Code, Cpu, GitBranch } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import HeatmapCard from "./components/HeatmapCard";
 
-import CalendarHeatmap from "react-calendar-heatmap";
-import {useLayoutEffect} from "react";
-import {Routes, Route, useParams, BrowserRouter} from "react-router-dom";
-import {ToastContainer, toast} from "react-toastify";
-import LoadingCard from "./Loading";
+function Result({ user, setUser }) {
+  const { profile } = useParams();
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+  const [startDate, setStartDate] = useState(new Date(`${currentYear}/01/01`));
+  const [endDate, setEndDate] = useState(new Date(`${currentYear}/12/31`));
 
-// import 'react-calendar-heatmap/dist/styles.css';
-function App() {
-    //console.log(match.params);
-    const [newProfile, setNewProfile] = useState("");
-    const {profile, github2} = useParams();
-    // console.log(profile);
-    // console.log(github2);
-    // setNewProfile(profile);
+  const [username, setUsername] = useState("");
+  const [leetcode, setLeetcode] = useState("");
+  const [codeForces, setCodeForces] = useState("");
+  const [github, setGithub] = useState("");
 
-    const [count, setCount] = useState(0);
-    const [dataC, setDataC] = useState([]);
-    const [newS, setNew] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [startDate, setStartDate] = useState("2022/01/01");
-    const [endDate, setEndDate] = useState(new Date());
-    const [leetcode, setLeetcode] = useState("");
-    const [CodeForces, setCodeForces] = useState("");
-    const [ApiDataCf, setApiDataCf] = useState([]);
-    const [github, setGithub] = useState("");
-    const [GithubApi, setGithubApi] = useState([]);
-    const [loadGithub, setLoadGithub] = useState(true);
-    const [leetLoading, setLeetLoading] = useState(true);
-    const [username, setUsername] = useState("");
-    const CalStyle = {
-        margin: "auto",
-        width: "92%",
-    };
+  const [leetData, setLeetData] = useState([]);
+  const [cfData, setCfData] = useState([]);
+  const [githubData, setGithubData] = useState([]);
 
-    const API_BASE = import.meta.env.VITE_API_BASE_URL;
+  // Complex profile details
+  const [lcStats, setLcStats] = useState(null);
+  const [cfStats, setCfStats] = useState(null);
+  const [ghStats, setGhStats] = useState(null);
 
-    async function getDataFromSearch() {
-        const user = {
-            profile: profile,
-        };
-//console.log("From search")
-        // setCodeForces(newProfile);
-        // console.log(profile);
-        // //   return;
-        const data = await axios.post(`${import.meta.env.VITE_API}/user`, user);
-        // console.log(data);
+  const [leetLoading, setLeetLoading] = useState(false);
+  const [cfLoading, setCfLoading] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
 
-        // console.log(data.data.github);
-        // setGithub(data.data.github);
-        //  setLeetcode(data.data.leetcode);
-        //  setCodeForces(data.data.codeforces);
-        const profileName = data.data.name;
-        setUsername(profileName);
-        const UserLeetcode = data.data.leetcode;
-        setLeetcode(UserLeetcode);
-        // console.log(UserLeetcode);
-        const UserCodeforces = data.data.codeforces;
-        setCodeForces(UserCodeforces);
-        const UserGithub = data.data.github;
-        setGithub(UserGithub);
+  const [copied, setCopied] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarking, setBookmarking] = useState(false);
 
-        // console.log(UserLeetcode);
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-        // const UserGithub = data.data.github;
-        // setLeetcode(data.data.leetcode);
-        // console.log(leetcode);
-        getDataFromLeetCode(UserLeetcode);
-        geGithubData(UserGithub);
+  // Sync bookmark state
+  useEffect(() => {
+    if (user && user.bookmarks) {
+      setIsBookmarked(user.bookmarks.includes(profile.toLowerCase()));
+    }
+  }, [user, profile]);
 
-        const value = await axios.get(`${import.meta.env.VITE_CODEFORCES}${UserCodeforces}`);
-        setLoading(true);
+  const handleYearChange = (e) => {
+    const year = e.target.value;
+    setSelectedYear(year);
+    setStartDate(new Date(`${year}/01/01`));
+    if (year === currentYear.toString()) {
+      setEndDate(new Date());
+    } else {
+      setEndDate(new Date(`${year}/12/31`));
+    }
+  };
 
-        if (value.status === 200) {
-            const tempData = ApiDataCf;
-            const myArray = value.data.result;
-            myArray.forEach((element, index, array) => {
-                var myDate = new Date(`${element.creationTimeSeconds}` * 1000)
-                    .toISOString()
-                    .replace("-", "/")
-                    .split("T")[0]
-                    .replace("-", "/");
-                tempData.push({date: `${myDate}`, count: `2`});
-            });
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    toast.success("Profile link copied!");
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-            setApiDataCf(tempData);
-            tempData.splice();
-            setLoading(false);
-            // toast.success("Codeforces Data Loaded Successfully");
-            // console.log(ApiDataCf[1]);
-            // console.log(ApiDataCf);
-        } else {
-            console.log("Error: API request failed with status", value.status);
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleToggleBookmark = async () => {
+    if (!user) {
+      toast.warning("Please sign in to bookmark profiles.");
+      return;
+    }
+    setBookmarking(true);
+    try {
+      const res = await axios.post(`${API_BASE}/user/bookmark`, {
+        targetProfile: profile.toLowerCase().trim()
+      }, {
+        withCredentials: true
+      });
+      if (res.data && res.data.bookmarks) {
+        setUser({ ...user, bookmarks: res.data.bookmarks });
+        toast.success(
+          res.data.bookmarks.includes(profile.toLowerCase())
+            ? "Added to favorites!"
+            : "Removed from favorites."
+        );
+      }
+    } catch (err) {
+      toast.error("Failed to update bookmark.");
+    } finally {
+      setBookmarking(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await axios.post(`${API_BASE}/user`, { profile });
+        if (res.data) {
+          setUsername(res.data.name);
+          setLeetcode(res.data.leetcode || "");
+          setCodeForces(res.data.codeforces || "");
+          setGithub(res.data.github || "");
+
+          if (res.data.leetcode) fetchLeetCode(res.data.leetcode);
+          if (res.data.codeforces) fetchCodeForces(res.data.codeforces);
+          if (res.data.github) fetchGithub(res.data.github);
         }
+      } catch (err) {
+        toast.error("User not found");
+      }
+    };
+    fetchUserData();
+  }, [profile]);
 
-        //console.log("Yha Tak Aaya");
+  const fetchLeetCode = async (usernameStr) => {
+    setLeetLoading(true);
+    try {
+      const value = await axios.post(`${API_BASE}/leetcode`, { username: usernameStr });
+      if (value.data.profile) {
+        setLcStats(value.data.profile);
+        const cal = value.data.profile.submissionCalendar;
+        const formatted = [];
+        for (let property in cal) {
+          let dateStr = new Date(parseInt(property) * 1000).toISOString().split("T")[0].replace(/-/g, "/");
+          formatted.push({ date: dateStr, count: parseInt(cal[property]) });
+        }
+        setLeetData(formatted);
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLeetLoading(false);
+    }
+  };
 
+  const fetchCodeForces = async (usernameStr) => {
+    setCfLoading(true);
+    try {
+      const value = await axios.post(`${API_BASE}/codeforces`, { username: usernameStr });
+      if (value.data.profile) {
+        setCfStats(value.data.profile);
+        const cal = value.data.profile.submissionCalendar;
+        const formatted = [];
+        for (let property in cal) {
+          formatted.push({ date: property, count: parseInt(cal[property]) });
+        }
+        setCfData(formatted);
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setCfLoading(false);
+    }
+  };
 
+  const fetchGithub = async (usernameStr) => {
+    setGithubLoading(true);
+    try {
+      const value = await axios.post(`${API_BASE}/github`, { username: usernameStr });
+      if (value.data) {
+        setGhStats(value.data);
+        const cal = value.data.submissionCalendar;
+        const formatted = [];
+        for (let property in cal) {
+          formatted.push({ date: property, count: parseInt(cal[property]) });
+        }
+        setGithubData(formatted);
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setGithubLoading(false);
+    }
+  };
+
+  // Compute Achievements dynamically
+  const getAchievements = () => {
+    const achievements = [];
+    const lcSolved = lcStats?.totalSolved || 0;
+    const cfStatus = cfData ? cfData.reduce((a, b) => a + b.count, 0) : 0;
+    const ghCommits = githubData ? githubData.reduce((a, b) => a + b.count, 0) : 0;
+    const langCount = ghStats?.languageStats ? Object.keys(ghStats.languageStats).length : 0;
+
+    if (lcSolved >= 100 || cfStatus >= 100) {
+      achievements.push({
+        id: "century",
+        title: "Century Solver",
+        desc: "Solved over 100 problems on a coding platform.",
+        color: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+      });
+    }
+    if (ghCommits >= 15) {
+      achievements.push({
+        id: "git_star",
+        title: "Consistent Git",
+        desc: "Logged over 15 commits on GitHub.",
+        color: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+      });
+    }
+    if (langCount >= 3) {
+      achievements.push({
+        id: "polyglot",
+        title: "Polyglot Coder",
+        desc: "Wrote code in 3 or more distinct languages on GitHub.",
+        color: "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
+      });
+    }
+    if (cfStats?.rating) {
+      achievements.push({
+        id: "cf_competitor",
+        title: "Active CP Competitor",
+        desc: "Registered active rating on Codeforces.",
+        color: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20"
+      });
     }
 
-    useEffect(() => {
-        getDataFromSearch();
-    }, [loadGithub, leetLoading]);
+    achievements.unshift({
+      id: "welcome",
+      title: "CodersHub Member",
+      desc: "Synced and initialized your global profile developer card.",
+      color: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20"
+    });
 
-    const getDataFromLeetCode = async (leetcodeProfilrUrl) => {
-        try {
-            const value = await axios.post(`${API_BASE}/leetcode`, { username: leetcodeProfilrUrl });
-            if (value.data.profile) {
-                setDataC(value.data.profile.submissionCalendar || {});
-                setCount(0);
-                setLeetLoading(true);
-                setNew([]);
-                const realdata = newS;
+    return achievements;
+  };
 
-                for (let property in dataC) {
-                    var myDate = new Date(`${property}` * 1000)
-                        .toISOString()
-                        .replace("-", "/")
-                        .split("T")[0]
-                        .replace("-", "/");
+  const getRatingChartData = () => {
+    const data = [];
+    const lcHistory = lcStats?.contestHistory || [];
+    const cfHistory = cfStats?.ratingHistory || [];
 
-                    realdata.push({date: `${myDate}`, count: `${dataC[property]}`});
-                }
-                setNew(realdata);
-                realdata.splice();
-                setCount(1);
-                setLeetLoading(false);
-            }
-        } catch (err) {
-            console.log('LeetCode API error', err);
+    lcHistory.forEach(h => {
+      data.push({
+        date: new Date(h.contest.startTime * 1000).toISOString().split("T")[0],
+        LeetCode: Math.round(h.rating),
+      });
+    });
+
+    cfHistory.forEach(h => {
+      data.push({
+        date: h.date,
+        Codeforces: h.rating,
+      });
+    });
+
+    return data.sort((a, b) => new Date(a.date) - new Date(b.date));
+  };
+
+  const getSolvePieData = () => {
+    if (!lcStats) return [];
+    return [
+      { name: "Easy", value: lcStats.easySolved || 0, color: "#10b981" },
+      { name: "Medium", value: lcStats.mediumSolved || 0, color: "#eab308" },
+      { name: "Hard", value: lcStats.hardSolved || 0, color: "#f43f5e" }
+    ];
+  };
+
+  const achievementsList = getAchievements();
+  const ratingData = getRatingChartData();
+  const solveData = getSolvePieData();
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500 pb-16 print:p-0 print:space-y-4">
+      
+      {/* Printable Report Styles */}
+      <style>{`
+        @media print {
+          header, nav, button, select, a, .no-print {
+            display: none !important;
+          }
+          body {
+            background-color: white !important;
+            color: black !important;
+          }
+          .print-full {
+            width: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+          }
         }
-    };
+      `}</style>
 
-    const getContributions = async (username) => {
-        try {
-            const value = await axios.post(`${API_BASE}/github`, { username });
-            return value.data;
-        } catch (err) {
-            console.log('GitHub API error', err);
-            return null;
-        }
-    };
+      {/* Profile Info Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-200 dark:border-gray-800 print-full">
+        <div>
+          <h2 className="text-sm font-semibold text-yellow-500 uppercase tracking-wider mb-1">Developer Profile</h2>
+          <div className="flex items-center gap-3">
+            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white capitalize">
+              {username || profile}
+            </h1>
+            <button
+              onClick={handleToggleBookmark}
+              disabled={bookmarking}
+              className={`p-1.5 rounded-lg border border-gray-200 dark:border-gray-800 transition-colors ${
+                isBookmarked
+                  ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500"
+                  : "text-gray-400 hover:text-yellow-500"
+              } no-print`}
+            >
+              <Bookmark size={18} fill={isBookmarked ? "currentColor" : "none"} />
+            </button>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3 no-print">
+          <select
+            value={selectedYear}
+            onChange={handleYearChange}
+            className="w-32 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-yellow-500 focus:border-yellow-500 p-2.5 shadow-sm transition-colors cursor-pointer"
+          >
+            {[...Array(5)].map((_, i) => {
+              const y = currentYear - i;
+              return <option key={y} value={y}>{y}</option>;
+            })}
+          </select>
 
-    const geGithubData = async (profileUrlGit) => {
-        const valueGit = await getContributions(profileUrlGit);
-        if (valueGit && valueGit.profile && valueGit.profile.contributionsCollection) {
-            setLoadGithub(true);
-            const tempArray = valueGit.profile.contributionsCollection.contributionCalendar.weeks;
-            const tepmValues = GithubApi;
-            tempArray.forEach((element) => {
-                const innerDays = element.contributionDays;
-                innerDays.forEach((element) => {
-                    if (element.contributionCount > 0) {
-                        tepmValues.push({ date: `${element.date}`, count: `${element.contributionCount}` });
-                    }
-                });
-            });
-            setGithubApi(tepmValues);
-            setLoadGithub(false);
-        }
-    };
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-750 text-gray-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
+          >
+            <Printer size={16} /> Print Report
+          </button>
 
-    const handleYear = () => {
-        setStartDate(new Date("2021/01/01"));
-        setEndDate(new Date("2021/12/30"));
-    };
+          <button
+            onClick={handleCopyLink}
+            className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95"
+          >
+            {copied ? <CheckCircle2 size={16} className="text-green-500 dark:text-green-600" /> : <Copy size={16} />}
+            {copied ? "Copied!" : "Share Profile"}
+          </button>
+        </div>
+      </div>
 
-    const getInitialState = () => {
-        const value4 = "2022";
-        return value4;
-    };
-    const [valueDate, setValueDate] = useState(getInitialState);
+      {/* Platform Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 print-full">
+        {/* GitHub stats Card */}
+        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6 rounded-xl flex items-center gap-4">
+          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500"><GitBranch size={24} /></div>
+          <div>
+            <span className="text-xs text-gray-400 font-medium">GitHub Repos</span>
+            <h3 className="text-2xl font-black text-gray-900 dark:text-white mt-1">
+              {ghStats?.profile?.public_repos || 0}
+            </h3>
+          </div>
+        </div>
 
-    const handleChange = (e) => {
-        setValueDate(e.target.value);
-        setStartDate(new Date(`${e.target.value}/01/01`));
-        setEndDate(new Date(`${e.target.value}/12/30`));
-    };
-    const startServer = async () => {
-        try {
-            const data = await axios.post(`${import.meta.env.VITE_API}`);
-            // console.log(data);
-        } catch (err) {
-            console.log(err);
-        }
-    }
-    useEffect(() => {
+        {/* LeetCode stats Card */}
+        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6 rounded-xl flex items-center gap-4">
+          <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500"><Code size={24} /></div>
+          <div>
+            <span className="text-xs text-gray-400 font-medium">LeetCode Solved</span>
+            <h3 className="text-2xl font-black text-gray-900 dark:text-white mt-1">
+              {lcStats?.totalSolved || 0}
+            </h3>
+          </div>
+        </div>
 
-            startServer();
-        }
-        , [])
+        {/* Codeforces stats Card */}
+        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6 rounded-xl flex items-center gap-4">
+          <div className="p-3 bg-red-500/10 rounded-xl text-red-500"><Cpu size={24} /></div>
+          <div>
+            <span className="text-xs text-gray-400 font-medium">Codeforces Rating</span>
+            <h3 className="text-2xl font-black text-gray-900 dark:text-white mt-1">
+              {cfStats?.rating || "Unrated"}
+            </h3>
+          </div>
+        </div>
+      </div>
 
-    // const[handleMonth, setHandleMonth] = useState("");
-    // const[handleDay, setHandleDay] = useState("");
-    // const[handleSubCount, setHandleSubCount] = useState("");
-    const [isOk, setIsOk] = useState(false);
-
-    const handleShowDate = (e, v) => {
-        //  console.log(e.target.value);
-        // console.log(e);
-        // console.log(v);
-
-        try {
-            if (v.date) {
-                const month = [
-                    "January",
-                    "February",
-                    "March",
-                    "April",
-                    "May",
-                    "June",
-                    "July",
-                    "August",
-                    "September",
-                    "October",
-                    "November",
-                    "December",
-                ];
-
-                const d = new Date(v.date);
-                let name = month[d.getMonth()];
-                let day = d.getDate();
-                // console.log(name);
-                // console.log("Value of count")
-                // console.log(v.count)
-                // setHandleMonth(name);
-                // setHandleDay(day);
-                // setHandleSubCount(v.count);
-                setIsOk(true);
-                // toast.success(day);
-                toast(`${v.count} Submissons on ${day} ${name}`, {
-                    position: "top-right",
-                    autoClose: false,
-                    hideProgressBar: false,
-                    closeOnClick: false,
-                    pauseOnHover: false,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                });
-            } else {
-                console.log("No Submissions");
-                toast.dismiss();
-                setIsOk(true);
-            }
-        } catch (error) {
-            console.log("No Submissions");
-            setIsOk(false);
-            // setHandleMonth("");
-            // setHandleSubCount("");
-            // setHandleDay("");
-            toast.dismiss();
-        }
-    };
-
-    const handleLeaveDate = () => {
-        toast.dismiss();
-        // setHandleMonth("");
-        // setHandleSubCount("");
-        setIsOk(false);
-    };
-
-    const getDataFromCodeforces = async (UserCodeforces) => {
-        try {
-            const value = await axios.post(`${API_BASE}/codeforces`, { username: UserCodeforces });
-            if (value.data.profile) {
-                const tempData = ApiDataCf;
-                const myArray = [value.data.profile];
-                myArray.forEach((element) => {
-                    var myDate = new Date(`${element.creationTimeSeconds}` * 1000)
-                        .toISOString()
-                        .replace("-", "/")
-                        .split("T")[0]
-                        .replace("-", "/");
-                    tempData.push({ date: `${myDate}`, count: `2` });
-                });
-                setApiDataCf(tempData);
-                setLoading(false);
-            }
-        } catch (err) {
-            console.log('Codeforces API error', err);
-        }
-    };
-
-    const getDataFromCodechef = async (UserCodechef) => {
-        try {
-            const value = await axios.post(`${API_BASE}/codechef`, { username: UserCodechef });
-            if (value.data.profile) {
-                // Handle CodeChef data as needed
-                // Example: setCodechefData(value.data.profile);
-            }
-        } catch (err) {
-            console.log('CodeChef API error', err);
-        }
-    };
-
-    return (
-        <>
-            <div class="  min-h-screen  text-lg">
-                <div class="text-six">
-                    <div class="details">
-                        <h2 class="text-xl change  leading-tight  text-white-900">
-                            <span class="mdi mdi-account-check blue-500"></span>{" "}
-                            <span
-                                class="inline-block py-1.5 px-2.5 leading-none text-center whitespace-nowrap align-baseline  text-yellow-600  rounded">
-                {" "}
-                                {username.toUpperCase()}
-              </span>
-                        </h2>
-                    </div>
-
-                    {/* <mark class="px-2 text-white bg-blue-600 rounded dark:bg-blue-500">User</mark> */}
-                    <h1 class=" text-3xl font-extrabold leading-none tracking-tight text-gray-900 change md:text-4xl text-white text-center ">
-                        Codeforces{" "}
-                        <span class="text-yellow-600 dark:text-yellow-600">Heatmap</span>{" "}
-                        <a
-                            target="blank"
-                            href={`https://codeforces.com/profile/${CodeForces}`}
-                        >
-                            <span class="mdi mdi-link-variant"></span>
-                        </a>
-                    </h1>
-                    <div className=" posYear ">
-                        <select
-                            value={valueDate}
-                            className="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
-                            onChange={handleChange}
-                        >
-                            <option value="2022">Select Year</option>
-                            <option value="2023">2023</option>
-                            <option value="2022">2022</option>
-                            <option value="2021">2021</option>
-                            <option value="2020">2020</option>
-                            <option value="2019">2019</option>
-                        </select>
-                    </div>
-                    {/* <CalendarHeatmap
-  startDate={startDate}
-  endDate={endDate}
-  values={ApiDataCf}
-/> */}
-                    {!loading ? (
-                        <CalendarHeatmap
-                            onMouseOver={(event, value) => {
-                                // console.log(event);
-                                // console.log(value);
-                                handleShowDate(event, value);
-                            }}
-                            onMouseLeave={handleLeaveDate}
-                            class="calS"
-                            startDate={startDate}
-                            endDate={endDate}
-                            values={ApiDataCf}
-                            classForValue={(value) => {
-                                if (!value) {
-                                    return "color-scale-0";
-                                } else if (value.count == 1) {
-                                    return `color-scale-1`;
-                                } else if (value.count == 2) {
-                                    return `color-scale-2`;
-                                } else if (value.count == 3) {
-                                    return `color-scale-3`;
-                                } else if (value.count >= 4) {
-                                    return `color-scale-4`;
-                                }
-                            }}
-                            gutterSize={3}
-                        />
-                    ) : (
-                        <h1 class="mb-4 text-3xl font-extrabold leading-none tracking-tight text-gray-900 change md:text-4xl text-white text-center ">
-                            {" "}
-                            <LoadingCard class="text-six" count={2}/>
-                        </h1>
-                    )}
-                </div>
-                {/* { isOk===true && <div class="text-aliceblue-900 change text-center">Month - { " "} {handleMonth} { "  " } Day= { handleDay} count= { " "} {handleSubCount}</div>} */}
-                {/* <div></div> */}
-                {/* { isOk===true &&    <div id="toast-default" class="flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800" role="alert">
-    <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-yellow-600 bg-blue-100 rounded-lg dark:bg-blue-800 dark:text-blue-200">
-        <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path></svg>
-        <span class="sr-only">Fire icon</span>
-    </div>
-    <div class="ml-3 text-sm font-normal">Month - { " "} {handleMonth} { "  " } Day= { handleDay} count= { " "} {handleSubCount}</div>
-    <button type="button" class="ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" data-dismiss-target="#toast-default" aria-label="Close">
-        <span class="sr-only">Close</span>
-        <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-    </button>
-</div>} */}
-
-                <h1 class="mb-4 text-3xl font-extrabold leading-none tracking-tight text-gray-900 change md:text-4xl text-white text-center ">
-                    <span class="text-yellow-600 dark:text-yellow-600">Github </span>{" "}
-                    Heatmap{" "}
-                    <a target="blank" href={`https://github.com/${github}`}>
-                        <span class="mdi mdi-link-variant"></span>
-                    </a>
-                </h1>
-
-                {!loadGithub ? (
-                    <CalendarHeatmap
-                        class="calS"
-                        startDate={startDate}
-                        endDate={endDate}
-                        values={GithubApi}
-                        onMouseOver={(event, value) => {
-                            // console.log(event);
-                            // console.log(value);
-                            handleShowDate(event, value);
-                        }}
-                        onMouseLeave={handleLeaveDate}
-                        classForValue={(value) => {
-                            if (!value) {
-                                return "color-scale-0";
-                            } else if (value.count == 1) {
-                                return `color-scale-1`;
-                            } else if (value.count == 2) {
-                                return `color-scale-2`;
-                            } else if (value.count == 3) {
-                                return `color-scale-3`;
-                            } else if (value.count >= 4) {
-                                return `color-scale-4`;
-                            }
-                        }}
-                        gutterSize={3}
-                    />
-                ) : (
-                    <h1 class="mb-4 text-3xl font-extrabold leading-none tracking-tight text-gray-900 change md:text-4xl text-white text-center ">
-                        <LoadingCard class="text-six" count={2}/>
-                    </h1>
-                )}
-                {/* <CalendarHeatmap
-  startDate={startDate}
-  endDate={endDate}
-  values={GithubApi}
-/> */}
-
-                <h1 class="mb-4 text-3xl font-extrabold leading-none tracking-tight text-gray-900 change md:text-4xl text-white text-center ">
-                    Leetcode{" "}
-                    <span class="text-yellow-600 dark:text-yellow-600">Heatmap </span>
-                    <a target="blank" href={`https://leetcode.com/${leetcode}`}>
-                        <span class="mdi mdi-link-variant"></span>
-                    </a>
-                </h1>
-                <div class="mb-10">
-
-                    {newS.length ? (
-                        <CalendarHeatmap
-                            class="calS "
-                            startDate={startDate}
-                            endDate={endDate}
-                            values={newS}
-                            onMouseOver={(event, value) => {
-                                // console.log(event);
-                                // console.log(value);
-                                handleShowDate(event, value);
-                            }}
-                            onMouseLeave={handleLeaveDate}
-                            classForValue={(value) => {
-                                if (!value) {
-                                    return "color-scale-0";
-                                } else if (value.count == 1) {
-                                    return `color-scale-1`;
-                                } else if (value.count == 2) {
-                                    return `color-scale-2`;
-                                } else if (value.count == 3) {
-                                    return `color-scale-3`;
-                                } else if (value.count >= 4) {
-                                    return `color-scale-4`;
-                                }
-                            }}
-                            gutterSize={3}
-                        />
-                    ) : (
-                        <h1 class="mb-4 text-3xl font-extrabold leading-none tracking-tight text-gray-900 change md:text-4xl text-white text-center ">
-                            <LoadingCard class="text-six" count={2}/>
-                        </h1>
-                    )}
-                </div>
-
+      {/* Charts & Milestones Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 print-full">
+        
+        {/* Rating Line Chart */}
+        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6 rounded-xl xl:col-span-2 space-y-4">
+          <h3 className="font-bold text-gray-900 dark:text-white text-lg">Rating Progress History</h3>
+          {ratingData.length > 0 ? (
+            <div className="h-[260px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={ratingData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#222" />
+                  <XAxis dataKey="date" stroke="#666" />
+                  <YAxis stroke="#666" />
+                  <Tooltip contentStyle={{ backgroundColor: "#111", border: "none", borderRadius: "8px", color: "#fff" }} />
+                  <Legend />
+                  <Line type="monotone" dataKey="LeetCode" stroke="#eab308" strokeWidth={2} connectNulls />
+                  <Line type="monotone" dataKey="Codeforces" stroke="#f43f5e" strokeWidth={2} connectNulls />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-        </>
-    );
+          ) : (
+            <div className="h-[260px] flex items-center justify-center text-gray-450 text-sm">
+              No contest rating changes logged.
+            </div>
+          )}
+        </div>
+
+        {/* Milestones badge card */}
+        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6 rounded-xl space-y-4">
+          <h3 className="font-bold text-gray-900 dark:text-white text-lg">Achievements & Badges</h3>
+          <div className="space-y-2.5 max-h-[260px] overflow-y-auto custom-scrollbar">
+            {achievementsList.map(a => (
+              <div key={a.id} className={`p-2.5 rounded-lg border flex gap-2.5 items-start ${a.color}`}>
+                <div className="pt-0.5"><Award size={14} /></div>
+                <div>
+                  <h4 className="font-bold text-xs">{a.title}</h4>
+                  <p className="text-[10px] opacity-75 mt-0.5">{a.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Heatmaps Block */}
+      <div className="space-y-8 print-full">
+        <HeatmapCard 
+          title="GitHub" 
+          platformUrl={github ? `https://github.com/${github}` : null}
+          loading={githubLoading} 
+          data={githubData} 
+          startDate={startDate} 
+          endDate={endDate} 
+        />
+        
+        <HeatmapCard 
+          title="LeetCode" 
+          platformUrl={leetcode ? `https://leetcode.com/${leetcode}` : null}
+          loading={leetLoading} 
+          data={leetData} 
+          startDate={startDate} 
+          endDate={endDate} 
+        />
+        
+        <HeatmapCard 
+          title="Codeforces" 
+          platformUrl={codeForces ? `https://codeforces.com/profile/${codeForces}` : null}
+          loading={cfLoading} 
+          data={cfData} 
+          startDate={startDate} 
+          endDate={endDate} 
+        />
+      </div>
+
+    </div>
+  );
 }
 
-export default App;
+export default Result;

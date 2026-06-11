@@ -12,13 +12,7 @@
   flex-wrap: nowrap;
   justify-content: space-around;
 }
-/* https://github.com/oguzbits/icon-parallax-background/blob/master/gif/Icon-Parallax.gif 
-https://media.giphy.com/media/U3qYN8S0j3bpK/giphy.gif
-*/
-body {
-  background-image: url(Icon-Parallax.gif) !important;
-}
-.posYear{
+
   display: -webkit-inline-box;
     float: right;
     padding: 2px 0 0  0;

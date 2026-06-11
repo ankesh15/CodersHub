@@ -1,126 +1,114 @@
-# Coders Profile Hub
+# CodersHub 🚀
 
-A modern, full-stack dashboard to track and compare coding stats from GitHub, LeetCode, Codeforces, and CodeChef. Built with React (Vite, TailwindCSS) and Node.js/Express/MongoDB.
+[![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 
-## DEMO 
-
-![image](https://github.com/user-attachments/assets/a73dd569-3c26-4dd7-a237-7255c1cdf06f)
-
-
-
----
-
-## 🚀 Features
-- **User Registration:** Simple login with name and email (no OAuth required)
-- **Profile Dashboard:** View and compare stats from multiple coding platforms
-- **Leaderboard:** See top users and compare with friends
-- **Charts & Visuals:** Language usage pie chart, problem count, rating graph, streaks
-- **Responsive UI:** Beautiful, mobile-friendly design with TailwindCSS
-- **Easy Deployment:** Ready for Vercel and MongoDB Atlas
+CodersHub is a production-ready, full-stack developer analytics platform designed to aggregate, track, and visualize coding activity across **GitHub**, **LeetCode**, and **Codeforces** in a single unified glassmorphic dashboard.
 
 ---
 
-## 🛠️ Tech Stack
-- **Frontend:** React, Vite, TailwindCSS, Recharts
-- **Backend:** Node.js, Express, Mongoose (MongoDB)
-- **APIs:** GitHub, LeetCode, Codeforces, CodeChef (public/unofficial)
+## ✨ Features
+
+- **Unified Developer Dashboard**: Sync stats, repository counts, and competitive programming ratings into one unified view.
+- **Interactive Profile Comparison**: Input any two developer handles to compare platform solves, ratings, and repositories side-by-side with interactive bar charts and color-coded win matrices.
+- **Milestone & Badging System**: Unlocked milestone badges dynamically (e.g., *Century Solver*, *Consistent Git*, *Polyglot Coder*) computed from real-time API syncs.
+- **Print & PDF Export**: A printable CSS layout that formats the developer profiles into clean report cards ready for recruiters.
+- **Robust Authentication**: Secure registration and login featuring password hashing (`bcryptjs`), input validation, and session-based persistent cookies.
+- **Sleek Glassmorphic UI**: Vibrant, responsive dark-mode styling built using Tailwind CSS and Lucide icons.
 
 ---
 
-## 📁 Folder Structure
-```
-CODERS-PROFILES/
-  backend/           # Node.js/Express backend
-    index.js         # Main server entry
-    routes/          # API route handlers
-    models/          # Mongoose models
-    package.json     # Backend dependencies/scripts
-  src/               # React frontend source
-    App.jsx, ...     # Main pages/components
-    main.jsx         # Entry point
-    Login.jsx        # Email/Name login page
-    ...
-  package.json       # Frontend dependencies/scripts
-  tailwind.config.js # TailwindCSS config
-  README.md          # This file
-```
+## 🛠️ Technology Stack
+
+**Frontend:**
+- React 18 & Vite
+- Tailwind CSS
+- Recharts (Rating trends, solve distributions)
+- React Calendar Heatmap (Commit calendars)
+- Lucide React (Icons)
+- React Toastify (Action notifications)
+
+**Backend:**
+- Node.js & Express.js
+- MongoDB Atlas & Mongoose
+- Express Session (Cookie management)
+- Bcrypt.js (Secure password hashing)
+- Passport.js (GitHub OAuth configuration Ready)
+- Helmet (Security headers)
 
 ---
 
-## ⚡ Quick Start
+## 🚀 Getting Started
 
-### 1. **Clone the repo**
-```bash
-git clone <https://github.com/ankesh15/CODERS-PROFILES>
-cd CODERS-PROFILES
-```
+### Prerequisites
+- Node.js (v18 or higher)
+- MongoDB Atlas Connection String
 
-### 2. **Install dependencies**
-- **Frontend:**
-  ```bash
-  npm install
-  ```
-- **Backend:**
-  ```bash
-  cd backend
-  npm install
-  ```
+### Environment Setup
 
-### 3. **Set up environment variables**
-- In `CODERS-PROFILES/`, create a file named `.env` (not a folder!) with:
-  ```
-  VITE_API_BASE_URL=http://localhost:5000/api
-  ```
-- In `CODERS-PROFILES/backend/`, create a `.env` file for MongoDB URI if needed:
-  ```
-  MONGODB_URI=mongodb://localhost:27017/coders-profile-hub
-  ```
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd CODERS-PROFILES
+   ```
 
-### 4. **Run the backend**
-```bash
-cd backend
-npm start
-```
+2. **Backend Setup**
+   ```bash
+   cd backend
+   npm install
+   ```
+   Create a `.env` file in the `backend` directory:
+   ```env
+   PORT=5000
+   MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/coders_profiles
+   SESSION_SECRET=your_secure_session_secret_string
+   NODE_ENV=development
+   ```
 
-### 5. **Run the frontend**
-```bash
-cd ..
-npm run dev
-```
-- Visit [http://localhost:5173](http://localhost:5173) (or the port shown in your terminal)
+3. **Frontend Setup**
+   ```bash
+   # Navigate back to root
+   cd ..
+   npm install
+   ```
+   Create a `.env` file in the root directory:
+   ```env
+   VITE_API_BASE_URL=http://localhost:5000/api
+   ```
 
 ---
 
-## 📝 Usage
-1. **Register/Login:** Enter your name and email on the login page.
-2. **Dashboard:** Add your coding platform usernames to view stats.
-3. **Leaderboard:** See how you rank among other users.
-4. **Profile:** View and share your coding achievements.
+## 💻 Running the Application
+
+1. **Start the backend server:**
+   ```bash
+   cd backend
+   npm start
+   ```
+
+2. **Start the frontend development server:**
+   ```bash
+   # From root directory
+   npm run dev
+   ```
+
+3. Open your browser and navigate to `http://localhost:5173`.
 
 ---
 
-## 🔌 API Overview
-- **POST `/api/add-user`** — Register/login with name & email
-- **GET `/api/users`** — List all users (leaderboard)
-- **POST `/api/leetcode`** — Fetch LeetCode stats
-- **POST `/api/codeforces`** — Fetch Codeforces stats
-- **POST `/api/github`** — Fetch GitHub stats
-- **POST `/api/codechef`** — Fetch CodeChef stats
+## 🔒 Security & Performance Measures
+
+- **Helmet Integration**: Implements HTTP headers protecting against XSS, clickjacking, and mime-type sniffing.
+- **Strict CORS & Cookies**: Ensures stateful sessions via cookie-based authentication with `withCredentials` settings.
+- **Password Protection**: Salting and hashing passwords on register/login via `bcryptjs`.
+- **API Resilience**: Handles API timeout states during external platform fetching.
 
 ---
 
-## 🧑‍💻 Contributing
-- Open issues or pull requests for improvements and features
-- All feedback and suggestions welcome!
+## 📝 License
 
----
-
-## 📄 License
-MIT
-
----
-
-## 🙏 Acknowledgements
-- LeetCode, Codeforces, GitHub, CodeChef for their APIs
-- React, TailwindCSS, Express, MongoDB communities
-
+This project is licensed under the MIT License.

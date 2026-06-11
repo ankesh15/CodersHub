@@ -4,9 +4,12 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   profile: { type: String, required: true, unique: true },
+  password: { type: String },
   leetcode: { type: String },
   codeforces: { type: String },
   github: { type: String },
+  bookmarks: [{ type: String, default: [] }],
+  achievements: [{ type: String, default: [] }],
   createdAt: { type: Date, default: Date.now }
 });
 
