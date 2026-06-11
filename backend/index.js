@@ -1,6 +1,8 @@
+// Load environment variables immediately
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const userRoutes = require('./routes/user');
@@ -9,11 +11,12 @@ const session = require('express-session');
 const passport = require('passport');
 const GitHubStrategy = require('passport-github2').Strategy;
 
-// Load environment variables
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
 app.use(helmet());
 app.use(cors({
@@ -44,7 +47,9 @@ passport.deserializeUser((obj, done) => {
 passport.use(new GitHubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID || 'GITHUB_CLIENT_ID',
   clientSecret: process.env.GITHUB_CLIENT_SECRET || 'GITHUB_CLIENT_SECRET',
-  callbackURL: 'http://localhost:5000/api/auth/github/callback'
+  callbackURL: process.env.BACKEND_URL 
+    ? `${process.env.BACKEND_URL.replace(/\/$/, '')}/api/auth/github/callback`
+    : 'http://localhost:5000/api/auth/github/callback'
 },
 (accessToken, refreshToken, profile, done) => {
   // You can save the user to your DB here
