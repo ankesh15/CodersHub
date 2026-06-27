@@ -45,6 +45,16 @@ CodersHub is a production-ready, full-stack developer analytics platform designe
 
 ## 🚀 Getting Started
 
+### Project Structure
+
+```text
+CodersHub/
+├── backend/        # Express.js backend (deployed on Render)
+├── frontend/       # React + Vite frontend (deployed on Vercel)
+├── README.md
+└── .gitignore
+```
+
 ### Prerequisites
 - Node.js (v18 or higher)
 - MongoDB Atlas Connection String
@@ -72,11 +82,10 @@ CodersHub is a production-ready, full-stack developer analytics platform designe
 
 3. **Frontend Setup**
    ```bash
-   # Navigate back to root
-   cd ..
+   cd ../frontend
    npm install
    ```
-   Create a `.env` file in the root directory:
+   Create a `.env` file in the `frontend` directory:
    ```env
    VITE_API_BASE_URL=http://localhost:5000/api
    ```
@@ -93,11 +102,20 @@ CodersHub is a production-ready, full-stack developer analytics platform designe
 
 2. **Start the frontend development server:**
    ```bash
-   # From root directory
+   cd frontend
    npm run dev
    ```
 
 3. Open your browser and navigate to `http://localhost:5173`.
+
+### Production Build
+
+To build the frontend for production, navigate to the `frontend` directory and run:
+```bash
+cd frontend
+npm run build
+```
+This will compile the application into the `frontend/dist` directory, which is configured for Vercel deployment.
 
 ---
 
