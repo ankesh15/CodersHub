@@ -92,12 +92,12 @@ const Compare = () => {
       </div>
 
       {/* Input Form */}
-      <div className="max-w-2xl mx-auto bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl shadow-sm">
+      <div className="max-w-2xl mx-auto bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl shadow-xs">
         <form onSubmit={handleCompare} className="flex flex-col sm:flex-row gap-4 items-center">
           <div className="flex-1 w-full relative">
             <input
               type="text"
-              className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
+              className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
               placeholder="Developer Handle 1 (e.g. john)"
               value={user1}
               onChange={(e) => setUser1(e.target.value)}
@@ -108,7 +108,7 @@ const Compare = () => {
           <div className="flex-1 w-full relative">
             <input
               type="text"
-              className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
+              className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
               placeholder="Developer Handle 2 (e.g. jane)"
               value={user2}
               onChange={(e) => setUser2(e.target.value)}

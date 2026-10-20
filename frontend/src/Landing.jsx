@@ -9,14 +9,14 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative flex flex-col items-center text-center pt-12 md:pt-20 space-y-8 overflow-hidden">
         {/* Background Decorative Gradients */}
-        <div className="absolute top-0 -z-10 h-[300px] w-full rounded-full bg-gradient-to-r from-yellow-500/10 via-purple-500/5 to-transparent blur-3xl" />
+        <div className="absolute top-0 -z-10 h-[300px] w-full rounded-full bg-linear-to-r from-yellow-500/10 via-purple-500/5 to-transparent blur-3xl" />
         
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400 text-xs font-semibold tracking-wide uppercase mb-2 border border-yellow-500/20">
           <Zap size={14} className="animate-pulse" /> Live Leaderboard & Developer Metrics
         </div>
 
         <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white max-w-4xl leading-tight">
-          Analyze and Benchmark Your <span className="bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-600 bg-clip-text text-transparent">Coding Journey</span>
+          Analyze and Benchmark Your <span className="bg-linear-to-r from-yellow-500 via-orange-500 to-yellow-600 bg-clip-text text-transparent">Coding Journey</span>
         </h1>
         
         <p className="text-lg sm:text-xl text-gray-500 dark:text-gray-400 max-w-2xl leading-relaxed">
@@ -41,7 +41,7 @@ const Landing = () => {
         {/* Product Preview Mockup */}
         <div className="w-full max-w-5xl pt-12">
           <div className="relative rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-2 shadow-2xl">
-            <div className="absolute inset-0 bg-gradient-to-b from-yellow-500/10 to-transparent blur-xl -z-10 rounded-2xl" />
+            <div className="absolute inset-0 bg-linear-to-b from-yellow-500/10 to-transparent blur-xl -z-10 rounded-2xl" />
             <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 p-6 sm:p-8 space-y-6 text-left">
               {/* Mockup Header */}
               <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-800">

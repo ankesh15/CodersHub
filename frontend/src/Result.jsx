@@ -241,7 +241,7 @@ function Result({ user, setUser }) {
           <select
             value={selectedYear}
             onChange={handleYearChange}
-            className="w-32 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-yellow-500 focus:border-yellow-500 p-2.5 shadow-sm transition-colors cursor-pointer"
+            className="w-32 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-yellow-500 focus:border-yellow-500 p-2.5 shadow-xs transition-colors cursor-pointer"
           >
             {[...Array(5)].map((_, i) => {
               const y = currentYear - i;
@@ -259,7 +259,7 @@ function Result({ user, setUser }) {
 
           <button
             onClick={handleCopyLink}
-            className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95"
+            className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-xs transition-all active:scale-95"
           >
             {copied ? <CheckCircle2 size={16} className="text-green-500 dark:text-green-600" /> : <Copy size={16} />}
             {copied ? "Copied!" : "Share Profile"}

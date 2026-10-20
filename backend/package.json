@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "test": "node --test test/*.test.js",
-    "lint": "node --check index.js && node --check app.js && node --check routes/user.js && node --check routes/platforms.js && node --check lib/oauth.js && node --check lib/validation.js"
+    "lint": "node --check index.js && node --check app.js && node --check routes/user.js && node --check routes/platforms.js && node --check lib/oauth.js && node --check lib/validation.js && node --check lib/config.js && node --check models/User.js"
   },
   "keywords": [],
   "author": "",

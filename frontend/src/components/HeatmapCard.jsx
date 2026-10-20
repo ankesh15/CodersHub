@@ -37,7 +37,7 @@ const HeatmapCard = ({ title, platformUrl, loading, data, startDate, endDate, ac
   };
 
   return (
-    <div className="heatmap-card bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col transition-all duration-300">
+    <div className="heatmap-card bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-100 dark:border-gray-700 p-6 flex flex-col transition-all duration-300">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
           {title} <span className="text-yellow-500 font-light">Heatmap</span>
@@ -62,10 +62,10 @@ const HeatmapCard = ({ title, platformUrl, loading, data, startDate, endDate, ac
             <div className="animate-pulse flex space-x-2 w-full max-w-lg">
               {note && <p className="mb-4 text-xs text-gray-500">{note}</p>}
       <div className="flex-1 space-y-4 py-1">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-sm w-3/4"></div>
                 <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-sm"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-sm w-5/6"></div>
                 </div>
               </div>
             </div>

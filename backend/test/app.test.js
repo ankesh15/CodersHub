@@ -118,8 +118,8 @@ test('HTTP validation, auth and real database workflows', async t => {
       assert.equal((await fetch(url + '/auth/me')).status, 401);
     } finally { await new Promise(resolve => degraded.close(resolve)); }
   });
-  await t.test('actual backend entrypoint starts, connects, serves health and shuts down', async () => {
-    const child = spawn(process.execPath, [path.join(__dirname, '../index.js')], { env: { ...process.env, MONGO_URI: mongo.getUri('codershub_regression'), PORT: '0', NODE_ENV: 'test' }, stdio: ['ignore', 'pipe', 'pipe'] });
+  await t.test('production backend entrypoint starts, connects, serves health and shuts down', async () => {
+    const child = spawn(process.execPath, [path.join(__dirname, '../index.js')], { env: { ...process.env, MONGO_URI: mongo.getUri('codershub_regression'), PORT: '0', NODE_ENV: 'production', FRONTEND_URL: 'https://frontend.example' }, stdio: ['ignore', 'pipe', 'pipe'] });
     try {
       const port = await new Promise((resolve, reject) => {
         let output = '';
@@ -136,16 +136,71 @@ test('HTTP validation, auth and real database workflows', async t => {
       await new Promise(resolve => child.once('exit', resolve));
     }
   });
+  await t.test('startup failures exit promptly without leaving MongoDB sockets alive', async () => {
+    for (const [secret, port, message] of [
+      ['short', '0', /SESSION_SECRET/],
+      [process.env.SESSION_SECRET, String(server.address().port), /EADDRINUSE/],
+    ]) {
+      const child = spawn(process.execPath, [path.join(__dirname, '../index.js')], {
+        env: { ...process.env, MONGO_URI: mongo.getUri('codershub_regression'), NODE_ENV: 'production', SESSION_SECRET: secret, FRONTEND_URL: 'https://frontend.example', PORT: port },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      let output = '';
+      child.stderr.on('data', chunk => { output += chunk; });
+      const exited = new Promise(resolve => child.once('exit', code => resolve({ code })));
+      let timer;
+      const result = await Promise.race([exited, new Promise(resolve => { timer = setTimeout(() => resolve(null), 3000); })]);
+      clearTimeout(timer);
+      if (!result) { child.kill('SIGKILL'); await exited; }
+      assert.ok(result, 'Invalid production configuration must exit, without leaving MongoDB sockets alive');
+      assert.equal(result.code, 1);
+      assert.match(output, message);
+    }
+  });
+  await t.test('production sessions set secure cookies behind the hosting proxy and enforce the configured origin', async () => {
+    const saved = { NODE_ENV: process.env.NODE_ENV, FRONTEND_URL: process.env.FRONTEND_URL };
+    let productionServer;
+    try {
+      process.env.NODE_ENV = 'production';
+      process.env.FRONTEND_URL = 'https://frontend.example';
+      productionServer = createApp({ store }).listen(0, '127.0.0.1');
+      await new Promise(resolve => productionServer.once('listening', resolve));
+      const url = `http://127.0.0.1:${productionServer.address().port}/api`;
+      const response = await fetch(url + '/auth/login', { method: 'POST', headers: {
+        'Content-Type': 'application/json', Origin: 'https://frontend.example', 'X-Forwarded-Proto': 'https',
+      }, body: JSON.stringify({ loginId: 'alice', password: account.password }) });
+      assert.equal(response.status, 200);
+      assert.match(response.headers.get('set-cookie'), /; Secure/);
+      assert.match(response.headers.get('set-cookie'), /; HttpOnly/);
+      assert.match(response.headers.get('set-cookie'), /; SameSite=None/);
+      assert.equal(response.headers.get('access-control-allow-origin'), 'https://frontend.example');
+      assert.equal(response.headers.get('access-control-allow-credentials'), 'true');
+      const preflight = await fetch(url + '/auth/login', { method: 'OPTIONS', headers: { Origin: 'https://frontend.example', 'Access-Control-Request-Method': 'POST' } });
+      assert.equal(preflight.status, 204);
+      assert.equal((await fetch(url + '/auth/logout', { method: 'POST', headers: { Origin: 'https://untrusted.example' } })).status, 403);
+    } finally {
+      if (productionServer) await new Promise(resolve => productionServer.close(resolve));
+      for (const [key, value] of Object.entries(saved)) {
+        if (value === undefined) delete process.env[key]; else process.env[key] = value;
+      }
+    }
+  });
   await t.test('production refuses weak secrets and nonpersistent sessions', () => {
     const original = process.env.NODE_ENV;
     const secret = process.env.SESSION_SECRET;
+    const frontend = process.env.FRONTEND_URL;
+    process.env.FRONTEND_URL = 'https://frontend.example';
     process.env.NODE_ENV = 'production';
     try {
       process.env.SESSION_SECRET = 'short';
       assert.throws(() => createApp(), /SESSION_SECRET/);
       process.env.SESSION_SECRET = secret;
       assert.throws(() => createApp(), /persistent session store/);
-    } finally { process.env.NODE_ENV = original; process.env.SESSION_SECRET = secret; }
+    } finally {
+      if (original === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = original;
+      process.env.SESSION_SECRET = secret;
+      if (frontend === undefined) delete process.env.FRONTEND_URL; else process.env.FRONTEND_URL = frontend;
+    }
   });
 
 });

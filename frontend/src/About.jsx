@@ -17,7 +17,7 @@ const About = () => {
             </header>
 
             <div className="space-y-12">
-                <section className="bg-white dark:bg-[#0f1115] rounded-2xl p-8 shadow-sm border border-gray-200 dark:border-gray-800">
+                <section className="bg-white dark:bg-[#0f1115] rounded-2xl p-8 shadow-xs border border-gray-200 dark:border-gray-800">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Mission</h2>
                     <div className="space-y-4 text-gray-600 dark:text-gray-300 leading-relaxed">
                         <p>
@@ -32,21 +32,21 @@ const About = () => {
                 <section>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">Core Features</h2>
                     <div className="grid md:grid-cols-3 gap-6">
-                        <div className="bg-white dark:bg-[#0f1115] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col items-center text-center">
+                        <div className="bg-white dark:bg-[#0f1115] p-6 rounded-2xl shadow-xs border border-gray-200 dark:border-gray-800 flex flex-col items-center text-center">
                             <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl mb-4">
                                 <Code size={24} />
                             </div>
                             <h3 className="font-bold text-gray-900 dark:text-white mb-2">Aggregate Profiles</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">Combine your GitHub, LeetCode, and Codeforces stats seamlessly.</p>
                         </div>
-                        <div className="bg-white dark:bg-[#0f1115] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col items-center text-center">
+                        <div className="bg-white dark:bg-[#0f1115] p-6 rounded-2xl shadow-xs border border-gray-200 dark:border-gray-800 flex flex-col items-center text-center">
                             <div className="p-3 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl mb-4">
                                 <LineChart size={24} />
                             </div>
                             <h3 className="font-bold text-gray-900 dark:text-white mb-2">Track Progress</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">View detailed heatmaps and activity charts over time.</p>
                         </div>
-                        <div className="bg-white dark:bg-[#0f1115] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col items-center text-center">
+                        <div className="bg-white dark:bg-[#0f1115] p-6 rounded-2xl shadow-xs border border-gray-200 dark:border-gray-800 flex flex-col items-center text-center">
                             <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-500 rounded-xl mb-4">
                                 <Trophy size={24} />
                             </div>

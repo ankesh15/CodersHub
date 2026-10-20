@@ -70,9 +70,9 @@ test('mobile navigation, theme, invalid routes and missing profiles show usable 
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.width);
 });
 test('real public profile prints to PDF with readable dark-theme styles', async ({ page, request }) => {
-  const response = await request.post('http://127.0.0.1:5051/api/auth/register', { data: { name: 'Print Developer', email: 'print@example.test', profile: 'print-peer', password: 'browser-secure-password' } });
+  const response = await request.post('http://127.0.0.1:5051/api/auth/register', { data: { name: 'Print Developer', email: 'print@example.test', profile: 'print.peer', password: 'browser-secure-password' } });
   expect(response.status()).toBe(201);
-  await page.goto('/result/print-peer');
+  await page.goto('/result/print.peer');
   await expect(page.getByRole('heading', { name: 'Print Developer', exact: true })).toBeVisible();
   await page.emulateMedia({ media: 'print' });
   await expect(page.getByRole('button', { name: 'Print Report' })).toBeHidden();
