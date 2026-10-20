@@ -215,3 +215,12 @@ npm --prefix frontend run test:e2e:live
 
 This check requires those external APIs to be available. It creates only a temporary
 test profile and records live browser artifacts under `frontend/test-results-live/`.
+
+### Deployed checks are separate from local/CI checks
+
+`VERIFY_FRONTEND_URL=https://your-frontend.example VERIFY_BACKEND_URL=https://your-backend.example npm --prefix backend run test:deployment`
+performs GET/OPTIONS-only checks against an existing hosted environment. Run it
+separately for Preview and Production. It exits nonzero on routing, readiness,
+CORS, asset/API configuration, or public-field privacy failures. It never signs
+in or changes user data. See [DEPLOYMENT.md](DEPLOYMENT.md) for confirmed hosting
+state and the manual release/configuration sequence.

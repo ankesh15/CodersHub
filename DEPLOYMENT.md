@@ -106,3 +106,57 @@ Tailwind was migrated with the official v4.3.3 upgrader to remove vulnerable v3
 build dependencies. Its browser targets are Safari 16.4+, Chrome 111+, and Firefox
 128+. The migrated dark-mode, borders, shadows, gradients, and focus utilities
 are included in the source. See the [official upgrade guide](https://tailwindcss.com/docs/upgrade-guide).
+
+## Read-only deployed verification
+
+Use the hosted verifier after a deployment has been authorized and completed, or
+against an existing deployment during investigation:
+
+```bash
+VERIFY_FRONTEND_URL=https://your-frontend.example \
+VERIFY_BACKEND_URL=https://your-backend.example \
+npm --prefix backend run test:deployment
+```
+
+It sends only GET and OPTIONS requests. It checks SPA routes (including dots),
+JavaScript assets, the compiled API reference, database-readiness JSON,
+anonymous-session behavior, credentialed CORS/preflight, and exclusion of private
+fields from the public directory. It never signs in or changes user data. Output
+contains status codes, field names and counts, never profile values. A failing
+contract exits 1; a successful frontend build alone is not a passing deployment.
+
+### Confirmed Render state from authenticated inspection
+
+The intended service is `CodersHub`, `srv-d8ldqtpkh4rs73ee56eg`, in the confirmed
+workspace `tea-d8l4becvikkc73ccosrg`. Its URL is
+`https://codershub-jxst.onrender.com`. Its configured repository, `main` branch,
+`backend` root and `npm start` command match the intended service. The configured
+build command is `npm install`, and the HTTP health-check path is empty.
+
+The only deploy returned by the paginated history is
+`dep-d8ldqu1kh4rs73ee56o0`, status `live`, commit
+`eb21bccfb54df99b4ebd960fc97a184324239db0` (June 11, 2026). This is older than
+current main and PR #1. Runtime logs show successful MongoDB connections and
+port 10000, so the missing `/api/health` endpoint is explained by the deployed
+old source, which only defines `/` as health. The reason later commits did not
+produce deploy records is not established by the available history; check the
+Git provider connection and auto-deploy integration in the Dashboard.
+
+Current live CORS responses allow `http://localhost:5173`, which does not match
+the Vercel frontend. Public profile responses also fail the private-field
+contract already fixed in current source. These remain production failures;
+local code fixes and successful GitHub Actions have not repaired the running
+backend. No production configuration or deploy was changed during inspection.
+
+Environment values were not retrieved: the connected MCP exposes no read-only
+environment-variable getter, the CLI has no configured authentication, and the
+Dashboard requires sign-in. Privately inspect required keys in the service's
+Environment tab; do not paste or log them. Confirm `FRONTEND_URL` is the intended
+canonical HTTPS frontend origin, a private MongoDB URI is configured, the
+session secret is strong, and optional OAuth is fully configured.
+
+After explicitly authorizing a release of reviewed code, verify the new deployed
+commit and `/api/health` response before changing the Render HTTP health-check
+path to `/api/health`. Changing the path while the old code is running would
+make health checks fail. Preview frontends need their own compatible backend
+origin/environment; do not use wildcard credentialed CORS to accommodate them.
