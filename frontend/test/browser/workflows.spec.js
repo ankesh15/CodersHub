@@ -1,0 +1,93 @@
+import { test, expect } from '@playwright/test';
+test('real registration, restored session, edit validation, bookmark, comparison and logout', async ({ page, request }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/register');
+  await page.locator('input[name="name"]').fill('Regression Developer');
+  await page.locator('input[name="email"]').fill('browser@example.test');
+  await page.locator('input[name="profile"]').fill('browser-regression');
+  await page.locator('input[name="password"]').fill('browser-secure-password');
+  await page.getByRole('button', { name: 'Complete Registration' }).click();
+  await expect(page.getByText("You're All Set!")).toBeVisible();
+  await page.goto('/dashboard');
+  await expect(page.getByRole('heading', { name: 'Regression Developer', exact: true })).toBeVisible();
+  await expect(page.getByText('Not linked', { exact: true })).toHaveCount(3);
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Regression Developer', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Edit Handles' }).click();
+  await page.locator('form input').first().fill('bad?username');
+  await page.getByRole('button', { name: 'Save Changes' }).click();
+  await expect(page.getByText('github username must contain only letters', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: 'Cancel Edit' }).click();
+  const second = await request.post('http://127.0.0.1:5051/api/auth/register', { data: { name: 'Regression Developer', email: 'second@example.test', profile: 'browser-peer', password: 'browser-secure-password' } });
+  expect(second.status()).toBe(201);
+  await page.goto('/search');
+  await page.getByPlaceholder('Search by username...').fill('browser-peer');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(page).toHaveURL(/result\/browser-peer/);
+  await expect(page.getByRole('heading', { name: 'Regression Developer', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Share Profile' }).click();
+  await expect(page.getByRole('button', { name: 'Copied!' })).toBeVisible();
+  await page.locator('select').selectOption(String(new Date().getFullYear() - 1));
+  await page.getByRole('button', { name: 'Bookmark profile' }).click();
+  await expect(page.getByText('Added to favorites!')).toBeVisible();
+  await page.goto('/dashboard');
+  await expect(page.getByRole('link', { name: '@browser-peer' })).toBeVisible();
+  await page.goto('/compare');
+  await page.getByPlaceholder('Developer Handle 1 (e.g. john)').fill('browser-regression');
+  await page.getByPlaceholder('Developer Handle 2 (e.g. jane)').fill('browser-peer');
+  await page.getByRole('button', { name: 'Compare', exact: true }).click();
+  await expect(page.getByText('Platform Performance Matrix')).toBeVisible();
+  await expect(page.getByText('N/A', { exact: true })).toHaveCount(12);
+  await page.getByRole('button', { name: 'Regression', exact: false }).click();
+  await page.getByRole('button', { name: 'Sign Out' }).click();
+  await expect(page.getByRole('link', { name: 'Sign In', exact: true })).toBeVisible();
+  await page.goto('/dashboard');
+  await expect(page.getByRole('heading', { name: 'Join the Community' })).toBeVisible();
+  await page.goto('/login');
+  await page.locator('input[type="text"]').fill('browser-regression');
+  await page.locator('input[type="password"]').fill('browser-secure-password');
+  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await expect(page).toHaveURL(/dashboard/);
+  expect(errors).toEqual([]);
+});
+test('mobile navigation, theme, invalid routes and missing profiles show usable states', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Toggle navigation' }).click();
+  await page.getByRole('link', { name: 'Search', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Find A Profile' })).toBeVisible();
+  await page.getByRole('button', { name: 'Toggle theme' }).click();
+  await expect(page.locator('html')).toHaveClass('dark');
+  await page.reload();
+  await expect(page.locator('html')).toHaveClass('dark');
+  await page.goto('/result/absent-browser-profile');
+  await expect(page.getByText('User not found', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Print Report' })).toHaveCount(0);
+  await page.goto('/does-not-exist');
+  await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
+  const sizes = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.width);
+});
+test('real public profile prints to PDF with readable dark-theme styles', async ({ page, request }) => {
+  const response = await request.post('http://127.0.0.1:5051/api/auth/register', { data: { name: 'Print Developer', email: 'print@example.test', profile: 'print-peer', password: 'browser-secure-password' } });
+  expect(response.status()).toBe(201);
+  await page.goto('/result/print-peer');
+  await expect(page.getByRole('heading', { name: 'Print Developer', exact: true })).toBeVisible();
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.getByRole('button', { name: 'Print Report' })).toBeHidden();
+  await page.pdf({ path: 'test-results/profile.pdf', format: 'A4', printBackground: true });
+  await page.screenshot({ path: 'test-results/profile-print.png', fullPage: true });
+});
+test('existing routes fit mobile, tablet and desktop widths', async ({ page }) => {
+  test.setTimeout(120000);
+  for (const width of [375, 768, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const route of ['/', '/register', '/login', '/compare', '/search', '/leaderboard', '/profile']) {
+      await page.goto(route);
+      await expect(page.locator('main')).toBeVisible();
+      const sizes = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
+      expect(sizes.scroll, `${route} at ${width}px`).toBeLessThanOrEqual(sizes.width);
+    }
+  }
+});

@@ -1,8 +1,9 @@
 import React from "react";
+import { ExternalLink } from "lucide-react";
 import CalendarHeatmap from "react-calendar-heatmap";
 import { toast } from "react-toastify";
 
-const HeatmapCard = ({ title, platformUrl, loading, data, startDate, endDate }) => {
+const HeatmapCard = ({ title, platformUrl, loading, data, startDate, endDate, activityLabel = "Submissions", note }) => {
   const handleShowDate = (event, value) => {
     try {
       if (value && value.date) {
@@ -10,10 +11,10 @@ const HeatmapCard = ({ title, platformUrl, loading, data, startDate, endDate }) 
           "January", "February", "March", "April", "May", "June",
           "July", "August", "September", "October", "November", "December",
         ];
-        const d = new Date(value.date);
+        const d = new Date(`${value.date}T00:00:00`);
         let name = month[d.getMonth()];
         let day = d.getDate();
-        toast(`${value.count} Submissions on ${day} ${name}`, {
+        toast(`${value.count} ${activityLabel} on ${day} ${name}`, {
           position: "top-right",
           autoClose: 2000,
           hideProgressBar: true,
@@ -36,28 +37,31 @@ const HeatmapCard = ({ title, platformUrl, loading, data, startDate, endDate }) 
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col transition-all duration-300">
+    <div className="heatmap-card bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col transition-all duration-300">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
           {title} <span className="text-yellow-500 font-light">Heatmap</span>
         </h2>
         {platformUrl && (
           <a
+            aria-label={`Open ${title} profile`}
             target="_blank"
             rel="noreferrer"
             href={platformUrl}
             className="text-gray-400 hover:text-yellow-500 transition-colors"
           >
-            <i className="mdi mdi-link-variant text-xl"></i>
+            <ExternalLink size={20} />
           </a>
         )}
       </div>
 
-      <div className="flex-1 w-full overflow-x-auto overflow-y-hidden pb-4 custom-scrollbar">
+      {note && <p className="mb-4 text-xs text-gray-500">{note}</p>}
+      <div className="heatmap-content flex-1 w-full overflow-x-auto overflow-y-hidden pb-4 custom-scrollbar">
         {loading ? (
           <div className="w-full h-32 flex items-center justify-center">
             <div className="animate-pulse flex space-x-2 w-full max-w-lg">
-              <div className="flex-1 space-y-4 py-1">
+              {note && <p className="mb-4 text-xs text-gray-500">{note}</p>}
+      <div className="flex-1 space-y-4 py-1">
                 <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
                 <div className="space-y-2">
                   <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -72,10 +76,11 @@ const HeatmapCard = ({ title, platformUrl, loading, data, startDate, endDate }) 
               startDate={startDate}
               endDate={endDate}
               values={data}
+              titleForValue={value => value ? `${value.date}: ${value.count} ${activityLabel}` : "No activity"}
               onMouseOver={(event, value) => handleShowDate(event, value)}
               onMouseLeave={handleLeaveDate}
               classForValue={(value) => {
-                if (!value) {
+                if (!value || !value.count) {
                   return "fill-gray-100 dark:fill-gray-800";
                 } else if (value.count == 1) {
                   return "fill-yellow-200 dark:fill-yellow-900/40";
@@ -91,7 +96,7 @@ const HeatmapCard = ({ title, platformUrl, loading, data, startDate, endDate }) 
             />
           </div>
         ) : (
-          <div className="w-full h-32 flex items-center justify-center text-gray-400 text-sm">
+          <div className="empty-heatmap w-full h-32 flex items-center justify-center text-gray-400 text-sm">
             No data available for this period.
           </div>
         )}

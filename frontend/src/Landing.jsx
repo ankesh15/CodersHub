@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Code, Trophy, Search, GitBranch, Cpu, Activity, BarChart2, Star, CheckCircle, ArrowRight, Zap, Users } from "lucide-react";
+import { Code, Trophy, Search, GitBranch, Cpu, ArrowRight, Zap } from "lucide-react";
 
 const Landing = () => {
   return (
@@ -100,7 +100,7 @@ const Landing = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Card 1 */}
-          <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-850 p-8 rounded-2xl hover:border-yellow-500/50 transition-all duration-300 group">
+          <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-8 rounded-2xl hover:border-yellow-500/50 transition-all duration-300 group">
             <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-950 flex items-center justify-center text-gray-950 dark:text-white mb-6 group-hover:bg-yellow-500 group-hover:text-white transition-all">
               <GitBranch size={24} />
             </div>
@@ -111,7 +111,7 @@ const Landing = () => {
           </div>
           
           {/* Card 2 */}
-          <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-850 p-8 rounded-2xl hover:border-yellow-500/50 transition-all duration-300 group">
+          <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-8 rounded-2xl hover:border-yellow-500/50 transition-all duration-300 group">
             <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-950 flex items-center justify-center text-gray-950 dark:text-white mb-6 group-hover:bg-yellow-500 group-hover:text-white transition-all">
               <Code size={24} />
             </div>
@@ -122,7 +122,7 @@ const Landing = () => {
           </div>
 
           {/* Card 3 */}
-          <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-850 p-8 rounded-2xl hover:border-yellow-500/50 transition-all duration-300 group">
+          <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-8 rounded-2xl hover:border-yellow-500/50 transition-all duration-300 group">
             <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-950 flex items-center justify-center text-gray-950 dark:text-white mb-6 group-hover:bg-yellow-500 group-hover:text-white transition-all">
               <Cpu size={24} />
             </div>

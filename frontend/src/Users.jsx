@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import { Search as SearchIcon, Users as UsersIcon, Trophy, ExternalLink, Loader2 } from "lucide-react";
@@ -7,32 +8,32 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         setLoading(true);
         setError(null);
-        fetch(`${API_BASE}/users`)
-            .then(res => {
-                if (!res.ok) throw new Error("Failed to fetch");
-                return res.json();
-            })
+        const controller = new AbortController();
+        axios.get(`${API_BASE}/users`, { signal: controller.signal })
+            .then(res => res.data)
             .then(data => {
+                if (!Array.isArray(data)) throw new Error("Invalid user list");
                 setUsers(data);
                 setLoading(false);
             })
             .catch(() => {
-                setError('Failed to fetch leaderboard data.');
+                if (controller.signal.aborted) return;
+                setError('Failed to fetch community profiles. Check the backend and database connection.');
                 setLoading(false);
             });
+        return () => controller.abort();
     }, []);
 
     // Filter users based on the search query
     const filteredUsers = users.filter(
         (user) =>
             user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             user.profile?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -53,7 +54,7 @@ const Users = () => {
                         Global Leaderboard
                     </h1>
                     <p className="text-gray-500 dark:text-gray-400">
-                        Top developers ranked by platform activity and consistency.
+                        Community profiles, newest members first. Compare developers to view platform performance.
                     </p>
                 </div>
                 
@@ -83,12 +84,12 @@ const Users = () => {
                         <Loader2 className="w-8 h-8 animate-spin mb-4 text-yellow-500" />
                         <p className="font-medium">Loading leaderboard...</p>
                     </div>
-                ) : filteredUsers.length > 0 ? (
+                ) : error ? <p className="p-8 text-center text-gray-500">Profiles are currently unavailable.</p> : filteredUsers.length > 0 ? (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left whitespace-nowrap">
                             <thead>
                                 <tr className="bg-gray-50 dark:bg-[#1a1c23] border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">
-                                    <th className="px-6 py-4 text-center w-16">Rank</th>
+                                    <th className="px-6 py-4 text-center w-16">#</th>
                                     <th className="px-6 py-4">Developer</th>
                                     <th className="px-6 py-4">Profile Handle</th>
                                     <th className="px-6 py-4 hidden sm:table-cell">Joined</th>
@@ -113,7 +114,7 @@ const Users = () => {
                                                         {formatName(user.name)}
                                                     </div>
                                                     <div className="text-xs text-gray-500 dark:text-gray-400 hidden md:block">
-                                                        {user.email || 'Private Email'}
+                                                        @{user.profile}
                                                     </div>
                                                 </div>
                                             </div>

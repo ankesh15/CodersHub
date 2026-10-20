@@ -1,11 +1,10 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import { CheckCircle2, Loader2, ArrowRight, Eye, EyeOff, User, Mail, Lock, ShieldAlert } from "lucide-react";
+import { CheckCircle2, Loader2, ArrowRight, Eye, EyeOff, User, Mail, Lock } from "lucide-react";
 
 const Form = ({ setUser }) => {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -80,7 +79,7 @@ const Form = ({ setUser }) => {
   if (successProfile) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center animate-in fade-in duration-500">
-        <div className="bg-white dark:bg-[#0f1115] p-8 rounded-2xl border border-gray-205 dark:border-gray-800 text-center max-w-md w-full shadow-2xl">
+        <div className="bg-white dark:bg-[#0f1115] p-8 rounded-2xl border border-gray-200 dark:border-gray-800 text-center max-w-md w-full shadow-2xl">
           <CheckCircle2 className="w-16 h-16 text-yellow-500 mx-auto mb-6" />
           <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">You're All Set!</h1>
           <p className="text-gray-500 dark:text-gray-400 mb-8">Your developer analytics profile has been created.</p>
@@ -104,7 +103,7 @@ const Form = ({ setUser }) => {
         <p className="text-gray-500 dark:text-gray-400">Join the leaderboard and benchmark your stats across platforms.</p>
       </div>
 
-      <div className="bg-white dark:bg-[#0f1115] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-808 p-6 md:p-8">
+      <div className="bg-white dark:bg-[#0f1115] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-6 md:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
@@ -172,6 +171,7 @@ const Form = ({ setUser }) => {
                 />
                 <button
                   type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
                 >
@@ -236,7 +236,7 @@ const Form = ({ setUser }) => {
           </button>
         </form>
 
-        <div className="text-center pt-6 mt-6 border-t border-gray-100 dark:border-gray-808">
+        <div className="text-center pt-6 mt-6 border-t border-gray-100 dark:border-gray-800">
           <p className="text-xs text-gray-400 font-medium">
             Already have an account?{" "}
             <Link to="/login" className="text-yellow-500 font-semibold hover:underline">

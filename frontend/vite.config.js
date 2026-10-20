@@ -8,12 +8,13 @@ export default defineConfig(({ mode }) => {
   
   // Format API base URL (VITE_API_URL or VITE_API_BASE_URL)
   const apiBaseUrl = env.VITE_API_BASE_URL || 
-    (env.VITE_API_URL ? `${env.VITE_API_URL.replace(/\/$/, '')}/api` : '');
+    (env.VITE_API_URL ? `${env.VITE_API_URL.replace(/\/$/, '')}/api` : '/api');
 
   return {
     plugins: [react()],
+    server: { proxy: { '/api': { target: env.API_PROXY_TARGET || 'http://localhost:5000', changeOrigin: true } } },
     define: {
-      'import.meta.env.VITE_API_BASE_URL': JSON.stringify(apiBaseUrl),
+      'import.meta.env.VITE_API_BASE_URL': JSON.stringify(apiBaseUrl.replace(/\/$/, '')),
     }
   }
 })

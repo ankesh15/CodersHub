@@ -31,7 +31,7 @@ const Search = () => {
         toast.error("User Not Found");
       }
     } catch (err) {
-      toast.error("User Not Found");
+      toast.error(err.response?.data?.error || "Could not search profiles. Check your connection and try again.");
     } finally {
       setIsSearching(false);
     }

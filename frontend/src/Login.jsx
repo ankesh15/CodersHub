@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
+import axios from "axios";
 import { toast } from "react-toastify";
 
 const Login = ({ setUser }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -19,14 +21,8 @@ const Login = ({ setUser }) => {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ loginId: loginId.trim(), password }),
-      });
-      const data = await res.json();
-      if (res.ok && data.user) {
+      const { data } = await axios.post(`${API_BASE}/auth/login`, { loginId: loginId.trim(), password });
+      if (data.user) {
         setUser(data.user);
         toast.success("Welcome back!");
         navigate("/dashboard");
@@ -34,7 +30,7 @@ const Login = ({ setUser }) => {
         toast.error(data.error || "Login failed");
       }
     } catch (err) {
-      toast.error("Network error. Make sure backend is running.");
+      toast.error(err.response?.data?.error || "Network error. Make sure backend is running.");
     } finally {
       setLoading(false);
     }
@@ -48,11 +44,12 @@ const Login = ({ setUser }) => {
           <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">
             Welcome <span className="text-yellow-500 font-light">Back</span>
           </h1>
-          <p className="text-sm text-gray-550 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Sign in to track your stats and compare metrics
           </p>
         </div>
 
+        {searchParams.get("oauth") === "failed" && <p role="alert" className="text-sm text-red-500">GitHub sign-in failed. If your email already has an account, sign in with your password.</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
             <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
@@ -91,6 +88,7 @@ const Login = ({ setUser }) => {
               />
               <button
                 type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
               >
@@ -117,7 +115,7 @@ const Login = ({ setUser }) => {
           </button>
         </form>
 
-        <div className="text-center pt-4 border-t border-gray-100 dark:border-gray-805">
+        <div className="text-center pt-4 border-t border-gray-100 dark:border-gray-800">
           <p className="text-xs text-gray-400">
             Don't have an account?{" "}
             <Link to="/register" className="text-yellow-500 font-semibold hover:underline">

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import usePlatformStats from "./hooks/usePlatformStats";
+import { earnedBadgeIds, ratingChartData } from "./lib/metrics";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Code, Trophy, GitBranch, Cpu, Loader2, Award, Bookmark, Edit2, Check, ExternalLink, RefreshCw } from "lucide-react";
-import { toast } from "react-toastify";function App({ user, setUser }) {
-  const navigate = useNavigate();
-  const currentYear = new Date().getFullYear();
+import { toast } from "react-toastify";
+
+function App({ user, setUser }) {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
@@ -14,47 +16,12 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
     codeforces: "",
   });
 
-  const [lcData, setLcData] = useState(null);
-  const [cfData, setCfData] = useState(null);
-  const [ghData, setGhData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { leetcode: lcData, codeforces: cfData, github: ghData, loading, errors, refresh: fetchPlatformStats } = usePlatformStats(user);
   const [saving, setSaving] = useState(false);
-  
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
-  // Initialize edit form when user loads
   useEffect(() => {
-    if (user) {
-      setEditForm({
-        name: user.name,
-        github: user.github || "",
-        leetcode: user.leetcode || "",
-        codeforces: user.codeforces || "",
-      });
-      fetchPlatformStats();
-    }
+    if (user) setEditForm({ name: user.name, github: user.github || "", leetcode: user.leetcode || "", codeforces: user.codeforces || "" });
   }, [user]);
-
-  const fetchPlatformStats = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const [lcRes, cfRes, ghRes] = await Promise.allSettled([
-        user.leetcode ? axios.post(`${API_BASE}/leetcode`, { username: user.leetcode }) : Promise.resolve(null),
-        user.codeforces ? axios.post(`${API_BASE}/codeforces`, { username: user.codeforces }) : Promise.resolve(null),
-        user.github ? axios.post(`${API_BASE}/github`, { username: user.github }) : Promise.resolve(null),
-      ]);
-
-      if (lcRes.status === "fulfilled" && lcRes.value) setLcData(lcRes.value.data.profile);
-      if (cfRes.status === "fulfilled" && cfRes.value) setCfData(cfRes.value.data.profile);
-      if (ghRes.status === "fulfilled" && ghRes.value) setGhData(ghRes.value.data.profile);
-
-    } catch (err) {
-      console.error("Error fetching stats:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSaveHandles = async (e) => {
     e.preventDefault();
@@ -64,12 +31,12 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
         withCredentials: true
       });
       if (res.data && res.data.user) {
-        setUser(res.data.user);
+        setUser(current => current?._id === res.data.user._id ? res.data.user : current);
         toast.success("Profile handles updated!");
         setEditing(false);
       }
     } catch (err) {
-      toast.error("Failed to update profile handles.");
+      toast.error(err.response?.data?.error || "Failed to update profile handles.");
     } finally {
       setSaving(false);
     }
@@ -81,24 +48,24 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
     
     // 1. Century Club (Solved 100+ on LeetCode or CF)
     const lcSolved = lcData?.totalSolved || 0;
-    const cfStatus = cfData?.submissionCalendar ? Object.values(cfData.submissionCalendar).reduce((a, b) => a + b, 0) : 0;
+    const cfStatus = cfData?.totalSolved || 0;
     
     if (lcSolved >= 100 || cfStatus >= 100) {
       achievements.push({
         id: "century",
         title: "Century Solver",
-        desc: "Solved over 100 problems on a coding platform.",
+        desc: "Solved at least 100 problems on a coding platform.",
         color: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
       });
     }
 
-    // 2. Consistent Committer (10+ commits/active days on Github)
+    // 2. Recent GitHub activity (15+ public events)
     const ghCommits = ghData?.submissionCalendar ? Object.values(ghData.submissionCalendar).reduce((a, b) => a + b, 0) : 0;
     if (ghCommits >= 15) {
       achievements.push({
         id: "git_star",
         title: "Consistent Git",
-        desc: "Logged over 15 recent commits on GitHub.",
+        desc: "Logged at least 15 recent public events on GitHub.",
         color: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
       });
     }
@@ -132,34 +99,12 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
       color: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20"
     });
 
-    return achievements;
+    const earned = earnedBadgeIds(lcData, cfData, ghData);
+    return achievements.filter(item => earned.includes(item.id));
   };
 
   // Format Recharts data for Rating Trends Chart
-  const getRatingChartData = () => {
-    const data = [];
-    const lcHistory = lcData?.contestHistory || [];
-    const cfHistory = cfData?.ratingHistory || [];
-
-    // Map LeetCode history
-    lcHistory.forEach(h => {
-      data.push({
-        date: new Date(h.contest.startTime * 1000).toISOString().split("T")[0],
-        LeetCode: Math.round(h.rating),
-      });
-    });
-
-    // Map Codeforces history
-    cfHistory.forEach(h => {
-      data.push({
-        date: h.date,
-        Codeforces: h.rating,
-      });
-    });
-
-    // Sort by date chronologically
-    return data.sort((a, b) => new Date(a.date) - new Date(b.date));
-  };
+  const getRatingChartData = () => ratingChartData(lcData, cfData);
 
   // Format Pie Chart Data for solves
   const getSolvePieData = () => {
@@ -185,7 +130,7 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
           <div className="flex gap-4">
             <Link
               to="/login"
-              className="flex-1 text-center bg-gray-900 hover:bg-gray-805 dark:bg-white dark:text-gray-900 text-white font-bold py-3 rounded-xl text-sm transition-all"
+              className="flex-1 text-center bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 text-white font-bold py-3 rounded-xl text-sm transition-all"
             >
               Sign In
             </Link>
@@ -208,23 +153,24 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
   return (
     <div className="space-y-8 pb-16 animate-in fade-in duration-500">
       
+      {errors.length > 0 && <div role="alert" className="rounded-xl border border-yellow-500/30 p-4 text-sm text-yellow-700 dark:text-yellow-400">{errors.map((error, index) => <p key={index}>{error}</p>)}</div>}
       {/* Upper Profile Header Panel */}
-      <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-808 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm">
+      <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm">
         <div className="space-y-2">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white capitalize">{user.name}</h1>
             <Link to={`/result/${user.profile}`} className="text-xs text-yellow-500 hover:underline flex items-center gap-1">
               View public card <ExternalLink size={12} />
             </Link>
           </div>
-          <p className="text-sm text-gray-450">Profile Handle: <span className="font-semibold text-yellow-500">@{user.profile}</span></p>
+          <p className="text-sm text-gray-400">Profile Handle: <span className="font-semibold text-yellow-500">@{user.profile}</span></p>
         </div>
         
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={fetchPlatformStats}
             disabled={loading}
-            className="flex items-center gap-2 border border-gray-250 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 disabled:opacity-50"
+            className="flex items-center gap-2 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 disabled:opacity-50"
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
             Sync Metrics
@@ -242,7 +188,7 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
 
       {/* Edit Form Drawer */}
       {editing && (
-        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-808 p-6 rounded-2xl shadow-sm animate-in slide-in-from-top-2">
+        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl shadow-sm animate-in slide-in-from-top-2">
           <h3 className="font-bold text-gray-950 dark:text-white text-lg mb-4">Edit Platform Handles</h3>
           <form onSubmit={handleSaveHandles} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div className="space-y-1">
@@ -287,34 +233,34 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* GitHub Card */}
-        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-808 p-6 rounded-2xl flex items-center gap-4">
+        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl flex items-center gap-4">
           <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500"><GitBranch size={24} /></div>
           <div>
-            <span className="text-xs text-gray-450 font-medium">GitHub Repositories</span>
+            <span className="text-xs text-gray-400 font-medium">GitHub Repositories</span>
             <h3 className="text-2xl font-black text-gray-900 dark:text-white mt-1">
-              {loading ? "..." : ghData?.public_repos || "0"}
+              {loading ? "..." : ghData?.profile?.public_repos ?? (user.github ? "Unavailable" : "Not linked")}
             </h3>
           </div>
         </div>
 
         {/* LeetCode Card */}
-        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-808 p-6 rounded-2xl flex items-center gap-4">
+        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl flex items-center gap-4">
           <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500"><Code size={24} /></div>
           <div>
-            <span className="text-xs text-gray-450 font-medium">LeetCode Solved</span>
+            <span className="text-xs text-gray-400 font-medium">LeetCode Solved</span>
             <h3 className="text-2xl font-black text-gray-900 dark:text-white mt-1">
-              {loading ? "..." : lcData?.totalSolved || "0"}
+              {loading ? "..." : lcData?.totalSolved ?? (user.leetcode ? "Unavailable" : "Not linked")}
             </h3>
           </div>
         </div>
 
         {/* Codeforces Card */}
-        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-808 p-6 rounded-2xl flex items-center gap-4">
+        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl flex items-center gap-4">
           <div className="p-3 bg-red-500/10 rounded-xl text-red-500"><Cpu size={24} /></div>
           <div>
-            <span className="text-xs text-gray-450 font-medium">Codeforces Rating</span>
+            <span className="text-xs text-gray-400 font-medium">Codeforces Rating</span>
             <h3 className="text-2xl font-black text-gray-900 dark:text-white mt-1">
-              {loading ? "..." : cfData?.rating || "Unrated"}
+              {loading ? "..." : cfData ? cfData.rating ?? "Unrated" : user.codeforces ? "Unavailable" : "Not linked"}
             </h3>
           </div>
         </div>
@@ -324,7 +270,7 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
         {/* Rating History Line Chart */}
-        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-808 p-6 rounded-2xl xl:col-span-2 space-y-6">
+        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl xl:col-span-2 space-y-6">
           <h3 className="font-bold text-gray-950 dark:text-white text-lg">Contest Rating Progress</h3>
           {ratingData.length > 0 ? (
             <div className="h-[300px] w-full">
@@ -348,9 +294,9 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
         </div>
 
         {/* Solves Breakdown Pie Chart */}
-        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-808 p-6 rounded-2xl flex flex-col justify-between">
+        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl flex flex-col justify-between">
           <h3 className="font-bold text-gray-950 dark:text-white text-lg">LeetCode Difficulty Split</h3>
-          {solveData.length > 0 ? (
+          {solveData.some(item => item.value > 0) ? (
             <>
               <div className="h-[220px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -394,8 +340,8 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Saved Profiles */}
-        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-808 p-6 rounded-2xl space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-850">
+        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl space-y-4">
+          <div className="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-800">
             <Bookmark size={18} className="text-yellow-500" />
             <h3 className="font-bold text-gray-950 dark:text-white text-lg">Favorite Developers</h3>
           </div>
@@ -405,7 +351,7 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
                 <Link
                   key={profileHandle}
                   to={`/result/${profileHandle}`}
-                  className="p-3 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-xl flex items-center justify-between transition-all"
+                  className="p-3 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl flex items-center justify-between transition-all"
                 >
                   <span className="font-semibold text-sm text-gray-800 dark:text-gray-200">@{profileHandle}</span>
                   <ExternalLink size={14} className="text-gray-400" />
@@ -418,8 +364,8 @@ import { toast } from "react-toastify";function App({ user, setUser }) {
         </div>
 
         {/* Milestone Achievements */}
-        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-808 p-6 rounded-2xl space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-850">
+        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl space-y-4">
+          <div className="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-800">
             <Award size={18} className="text-yellow-500" />
             <h3 className="font-bold text-gray-950 dark:text-white text-lg">Milestones & Badges</h3>
           </div>

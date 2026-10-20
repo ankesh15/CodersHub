@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Sun, Moon, Code, LogOut, Search, User, LayoutDashboard, Trophy, Info, GitCompare, Settings } from "lucide-react";
+import { Menu, X, Sun, Moon, LogOut, Search, LayoutDashboard, Trophy, Info, GitCompare } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import axios from "axios";
 import { toast } from "react-toastify";
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
+const Header = ({ user, onLogout, darkMode, toggleTheme }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
@@ -18,15 +19,10 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
 
   const handleLogout = async () => {
     try {
-      const res = await fetch(`${API_BASE}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (res.ok) {
-        onLogout();
-        toast.success("Successfully logged out!");
-        navigate("/");
-      }
+      await axios.post(`${API_BASE}/auth/logout`, {});
+      onLogout();
+      toast.success("Successfully logged out!");
+      navigate("/");
     } catch (err) {
       toast.error("Logout failed.");
     }
@@ -47,7 +43,7 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-150 bg-white/75 backdrop-blur-md dark:border-gray-800/80 dark:bg-[#09090b]/75 transition-all duration-300">
+    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/75 backdrop-blur-md dark:border-gray-800/80 dark:bg-[#09090b]/75 transition-all duration-300">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           
@@ -64,7 +60,7 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -73,7 +69,7 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
                   "flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200",
                   isActive(link.path)
                     ? "bg-yellow-500/10 text-yellow-600 dark:bg-yellow-500/15 dark:text-yellow-400 font-semibold"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-950 dark:text-gray-450 dark:hover:bg-gray-900 dark:hover:text-white"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-950 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-white"
                 )}
               >
                 {link.icon}
@@ -83,11 +79,11 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
           </nav>
 
           {/* Actions & Profile Dropdown */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
             <button
               onClick={toggleTheme}
+              aria-label="Toggle theme"
               className="p-2 rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-white transition-colors"
-              aria-label="Toggle Theme"
             >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
@@ -99,10 +95,10 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
                   className="flex items-center gap-2 p-1.5 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all focus:outline-none"
                 >
                   <div className="h-7 w-7 rounded-lg bg-yellow-500/15 text-yellow-600 flex items-center justify-center font-bold text-sm">
-                    {user.name[0].toUpperCase()}
+                    {user.name?.[0]?.toUpperCase() || "U"}
                   </div>
                   <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 pr-1">
-                    {user.name.split(" ")[0]}
+                    {user.name?.split(" ")[0] || "Account"}
                   </span>
                 </button>
 
@@ -110,8 +106,8 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
                 {dropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
-                    <div className="absolute right-0 mt-2 w-48 rounded-xl border border-gray-150 bg-white dark:border-gray-800 dark:bg-gray-950 shadow-xl py-1 z-20 animate-in fade-in slide-in-from-top-1">
-                      <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-850">
+                    <div className="absolute right-0 mt-2 w-48 rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 shadow-xl py-1 z-20 animate-in fade-in slide-in-from-top-1">
+                      <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-800">
                         <p className="text-xs text-gray-400">Signed in as</p>
                         <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate capitalize">{user.name}</p>
                       </div>
@@ -139,7 +135,7 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
               <div className="flex gap-2">
                 <Link
                   to="/login"
-                  className="flex items-center gap-1.5 rounded-xl border border-gray-200 dark:border-gray-800 px-4 py-2 text-sm font-semibold text-gray-750 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all"
+                  className="flex items-center gap-1.5 rounded-xl border border-gray-200 dark:border-gray-800 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all"
                 >
                   Sign In
                 </Link>
@@ -154,16 +150,19 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center gap-2">
+          <div className="flex lg:hidden items-center gap-2">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:text-gray-450 dark:hover:bg-gray-900 transition-colors"
+              aria-label="Toggle theme"
+              className="p-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-900 transition-colors"
             >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <button
+              aria-label="Toggle navigation"
+              aria-expanded={menuOpen}
               onClick={() => setMenuOpen(!menuOpen)}
-              className="inline-flex items-center justify-center rounded-xl p-2 text-gray-450 hover:bg-gray-100 hover:text-gray-650 dark:hover:bg-gray-900 focus:outline-none"
+              className="inline-flex items-center justify-center rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-900 focus:outline-none"
             >
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -173,7 +172,7 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
 
       {/* Mobile Menu Dropdown */}
       {menuOpen && (
-        <div className="md:hidden border-t border-gray-150 dark:border-gray-850 bg-white dark:bg-[#09090b] shadow-xl animate-in slide-in-from-top-2">
+        <div className="lg:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#09090b] shadow-xl animate-in slide-in-from-top-2">
           <div className="space-y-1 px-4 pb-4 pt-2">
             {navLinks.map((link) => (
               <Link
@@ -184,7 +183,7 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
                   "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-base font-medium transition-all",
                   isActive(link.path)
                     ? "bg-yellow-500/10 text-yellow-600 dark:bg-yellow-500/15 dark:text-yellow-400 font-semibold"
-                    : "text-gray-650 hover:bg-gray-50 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-900 dark:hover:text-white"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-900 dark:hover:text-white"
                 )}
               >
                 {link.icon}
@@ -193,16 +192,16 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
             ))}
           </div>
           
-          <div className="border-t border-gray-150 dark:border-gray-850 pb-6 pt-4 px-4">
+          <div className="border-t border-gray-200 dark:border-gray-800 pb-6 pt-4 px-4">
             {user ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 px-3.5">
                   <div className="h-9 w-9 rounded-lg bg-yellow-500/15 text-yellow-600 flex items-center justify-center font-bold">
-                    {user.name[0].toUpperCase()}
+                    {user.name?.[0]?.toUpperCase() || "U"}
                   </div>
                   <div>
-                    <div className="text-base font-semibold text-gray-850 dark:text-gray-200 capitalize">{user.name}</div>
-                    <div className="text-xs text-gray-450">@{user.profile}</div>
+                    <div className="text-base font-semibold text-gray-800 dark:text-gray-200 capitalize">{user.name}</div>
+                    <div className="text-xs text-gray-400">@{user.profile}</div>
                   </div>
                 </div>
                 <button
@@ -220,7 +219,7 @@ const Header = ({ user, onLogout, setUser, darkMode, toggleTheme }) => {
                 <Link
                   to="/login"
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 py-2.5 text-base font-semibold text-gray-750 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900"
+                  className="flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 py-2.5 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900"
                 >
                   Sign In
                 </Link>

@@ -12,34 +12,28 @@ import Search from './Search';
 import Landing from './Landing';
 import Compare from './Compare';
 import axios from 'axios';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './index.css';
 
 axios.defaults.withCredentials = true;
+axios.defaults.timeout = 45000;
 
 const Root = () => {
   // Global user state
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sessionError, setSessionError] = useState("");
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   // Restore session on mount
   useEffect(() => {
-    fetch(`${API_BASE}/auth/me`, { credentials: 'include' })
-      .then(res => {
-        if (res.ok) return res.json();
-        throw new Error("Not logged in");
-      })
-      .then(data => {
-        if (data && data.user) {
-          setUser(data.user);
-        }
-      })
-      .catch(err => {
-        // Safe to ignore, user is guest
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    const controller = new AbortController();
+    axios.get(`${API_BASE}/auth/me`, { signal: controller.signal, timeout: 10000 })
+      .then(({ data }) => { if (data?.user) setUser(data.user); })
+      .catch(error => { if (!controller.signal.aborted && error.response?.status !== 401) setSessionError("Could not restore your session. Check the backend connection, then reload or sign in."); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, [API_BASE]);
 
   const handleLogout = () => setUser(null);
@@ -58,6 +52,8 @@ const Root = () => {
   return (
     <BrowserRouter>
       <Layout user={user} onLogout={handleLogout} setUser={setUser}>
+        <ToastContainer position="top-right" autoClose={4000} />
+        {sessionError && !user && <p role="alert" className="mb-4 rounded-lg border border-yellow-500/30 p-3 text-sm">{sessionError}</p>}
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/dashboard" element={<App user={user} setUser={setUser} />} />
@@ -68,6 +64,7 @@ const Root = () => {
           <Route path="/result/:profile" element={<Result user={user} setUser={setUser} />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/compare" element={<Compare />} />
+          <Route path="*" element={<div className="py-16 text-center"><h1 className="text-2xl font-bold">Page not found</h1><a href="/" className="text-yellow-500">Return home</a></div>} />
         </Routes>
       </Layout>
     </BrowserRouter>
