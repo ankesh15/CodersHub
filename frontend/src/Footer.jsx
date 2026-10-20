@@ -17,7 +17,7 @@ const Footer = () => {
                             href="https://github.com/ankesh15/CODERS-PROFILES"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="block w-10 h-10 rounded-full transition-all shadow hover:shadow-lg transform hover:scale-110 hover:rotate-12"
+                            className="block w-10 h-10 rounded-full transition-all shadow-sm hover:shadow-lg transform hover:scale-110 hover:rotate-12"
                         >
                             <img
                                 className="object-cover object-center w-full h-full rounded-full"
@@ -30,7 +30,7 @@ const Footer = () => {
                             href="https://www.linkedin.com/in/ankesh-singh-3b8b8728a/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="block w-10 h-10 rounded-full transition-all shadow hover:shadow-lg transform hover:scale-110 hover:rotate-12"
+                            className="block w-10 h-10 rounded-full transition-all shadow-sm hover:shadow-lg transform hover:scale-110 hover:rotate-12"
                         >
                             <img
                                 className="object-cover object-center w-full h-full rounded-full"

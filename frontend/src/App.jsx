@@ -155,7 +155,7 @@ function App({ user, setUser }) {
       
       {errors.length > 0 && <div role="alert" className="rounded-xl border border-yellow-500/30 p-4 text-sm text-yellow-700 dark:text-yellow-400">{errors.map((error, index) => <p key={index}>{error}</p>)}</div>}
       {/* Upper Profile Header Panel */}
-      <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm">
+      <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-xs">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white capitalize">{user.name}</h1>
@@ -178,7 +178,7 @@ function App({ user, setUser }) {
           
           <button
             onClick={() => setEditing(!editing)}
-            className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95"
+            className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-xs transition-all active:scale-95"
           >
             <Edit2 size={16} />
             {editing ? "Cancel Edit" : "Edit Handles"}
@@ -188,7 +188,7 @@ function App({ user, setUser }) {
 
       {/* Edit Form Drawer */}
       {editing && (
-        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl shadow-sm animate-in slide-in-from-top-2">
+        <div className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-800 p-6 rounded-2xl shadow-xs animate-in slide-in-from-top-2">
           <h3 className="font-bold text-gray-950 dark:text-white text-lg mb-4">Edit Platform Handles</h3>
           <form onSubmit={handleSaveHandles} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div className="space-y-1">

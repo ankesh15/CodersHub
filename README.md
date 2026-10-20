@@ -63,8 +63,8 @@ CodersHub/
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd CODERS-PROFILES
+   git clone https://github.com/ankesh15/CodersHub.git
+   cd CodersHub
    ```
 
 2. **Backend Setup**
@@ -135,6 +135,12 @@ This will compile the application into the `frontend/dist` directory, which is c
 This project is licensed under the MIT License.
 
 
+## Deployment configuration
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for exact Vercel/Render roots, commands,
+environment variables, session-secret rotation, and unavailable hosting evidence.
+Production builds now require an explicit `VITE_API_BASE_URL`.
+
 ## Verification and current limitations
 
 See [AUDIT_REPORT.md](AUDIT_REPORT.md) for the source audit, implemented repairs,
@@ -177,13 +183,15 @@ npm --prefix frontend run lint
 npm --prefix frontend test
 npm --prefix frontend run build
 npm --prefix frontend run test:e2e
+npm --prefix frontend run test:e2e:production
 ```
 
 Backend and browser tests use a temporary MongoDB instance, never `backend/.env`
 or the configured user database. The first run may download a MongoDB test binary;
 set `MONGOMS_DOWNLOAD_DIR=/tmp/codershub-mongodb` to keep that cache in `/tmp`.
 Browser tests use installed Google Chrome; if Chrome is unavailable, configure
-Playwright's browser channel for your environment. Test servers use ports 5051 and
+Playwright's browser channel with `PLAYWRIGHT_CHANNEL=chromium` and install
+the browser with `cd frontend && npx playwright install chromium`. Test servers use ports 5051 and
 5173, which must be free.
 
 For real, read-only external API smoke checks:
@@ -194,7 +202,9 @@ node test/platform-smoke.cjs
 ```
 
 This command reports actual upstream results, including failures and partial data;
-it does not replace upstream services with fixtures.
+it does not replace upstream services with fixtures. It exits nonzero when any
+provider fails, including the legacy CodeChef provider currently returning HTTP
+402. See the audit report for the actual results.
 
 For an opt-in browser check of actual GitHub, LeetCode, and Codeforces statistics,
 charts, heatmaps, badges, and print output:
@@ -205,3 +215,12 @@ npm --prefix frontend run test:e2e:live
 
 This check requires those external APIs to be available. It creates only a temporary
 test profile and records live browser artifacts under `frontend/test-results-live/`.
+
+### Deployed checks are separate from local/CI checks
+
+`VERIFY_FRONTEND_URL=https://your-frontend.example VERIFY_BACKEND_URL=https://your-backend.example npm --prefix backend run test:deployment`
+performs GET/OPTIONS-only checks against an existing hosted environment. Run it
+separately for Preview and Production. It exits nonzero on routing, readiness,
+CORS, asset/API configuration, or public-field privacy failures. It never signs
+in or changes user data. See [DEPLOYMENT.md](DEPLOYMENT.md) for confirmed hosting
+state and the manual release/configuration sequence.

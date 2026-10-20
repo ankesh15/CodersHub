@@ -116,7 +116,7 @@ const Form = ({ setUser }) => {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="John Doe"
-                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
+                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
                   required
                 />
               </div>
@@ -132,7 +132,7 @@ const Form = ({ setUser }) => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="john@example.com"
-                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
+                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
                   required
                 />
               </div>
@@ -150,7 +150,7 @@ const Form = ({ setUser }) => {
                   value={formData.profile}
                   onChange={handleChange}
                   placeholder="johndoe"
-                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
+                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
                   required
                 />
               </div>
@@ -166,14 +166,14 @@ const Form = ({ setUser }) => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
+                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-12 py-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
                   required
                 />
                 <button
                   type="button"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
+                  className="absolute right-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-hidden"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -192,7 +192,7 @@ const Form = ({ setUser }) => {
                   value={formData.github}
                   onChange={handleChange}
                   placeholder="GitHub handle"
-                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
+                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
                 />
               </div>
               <div>
@@ -203,7 +203,7 @@ const Form = ({ setUser }) => {
                   value={formData.leetcode}
                   onChange={handleChange}
                   placeholder="LeetCode handle"
-                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
+                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
                 />
               </div>
               <div>
@@ -214,7 +214,7 @@ const Form = ({ setUser }) => {
                   value={formData.codeforces}
                   onChange={handleChange}
                   placeholder="Codeforces handle"
-                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
+                  className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white"
                 />
               </div>
             </div>

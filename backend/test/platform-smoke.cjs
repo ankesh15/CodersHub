@@ -7,6 +7,7 @@ const { createApp } = require('../app');
     for (const [platform, username] of [['github', 'octocat'], ['leetcode', 'leetcode'], ['codeforces', 'tourist'], ['codechef', 'tourist']]) {
       const response = await fetch(`http://127.0.0.1:${server.address().port}/api/${platform}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username }), signal: AbortSignal.timeout(120000) });
       const data = await response.json();
+      if (!response.ok || !data.profile) process.exitCode = 1;
       console.log(JSON.stringify({ platform, status: response.status, error: data.error, warnings: data.warnings, profileReceived: Boolean(data.profile), repos: platform === 'github' ? data.profile?.public_repos : undefined, solved: data.profile?.totalSolved }));
     }
     const missing = await fetch(`http://127.0.0.1:${server.address().port}/api/codeforces`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'codershub_missing_88' }), signal: AbortSignal.timeout(15000) });

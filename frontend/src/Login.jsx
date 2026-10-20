@@ -62,7 +62,7 @@ const Login = ({ setUser }) => {
               <input
                 type="text"
                 placeholder="you@example.com or username"
-                className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white transition-all"
+                className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white transition-all"
                 value={loginId}
                 onChange={(e) => setLoginId(e.target.value)}
                 required
@@ -81,7 +81,7 @@ const Login = ({ setUser }) => {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white transition-all"
+                className="w-full bg-gray-50 dark:bg-[#1a1c23] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-12 py-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white transition-all"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -90,7 +90,7 @@ const Login = ({ setUser }) => {
                 type="button"
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
+                className="absolute right-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-hidden"
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>

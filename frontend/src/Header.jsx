@@ -48,9 +48,9 @@ const Header = ({ user, onLogout, darkMode, toggleTheme }) => {
         <div className="flex h-16 items-center justify-between">
           
           {/* Logo */}
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-400 to-yellow-600 text-white font-bold text-xl group-hover:scale-105 transition-all shadow-md shadow-yellow-500/10">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-yellow-400 to-yellow-600 text-white font-bold text-xl group-hover:scale-105 transition-all shadow-md shadow-yellow-500/10">
                 C
               </div>
               <span className="font-extrabold text-xl tracking-tight text-gray-900 dark:text-white">
@@ -92,7 +92,7 @@ const Header = ({ user, onLogout, darkMode, toggleTheme }) => {
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 p-1.5 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all focus:outline-none"
+                  className="flex items-center gap-2 p-1.5 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all focus:outline-hidden"
                 >
                   <div className="h-7 w-7 rounded-lg bg-yellow-500/15 text-yellow-600 flex items-center justify-center font-bold text-sm">
                     {user.name?.[0]?.toUpperCase() || "U"}
@@ -141,7 +141,7 @@ const Header = ({ user, onLogout, darkMode, toggleTheme }) => {
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center gap-1.5 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 text-sm font-bold shadow-sm transition-all"
+                  className="flex items-center gap-1.5 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 text-sm font-bold shadow-xs transition-all"
                 >
                   Sign Up
                 </Link>
@@ -162,7 +162,7 @@ const Header = ({ user, onLogout, darkMode, toggleTheme }) => {
               aria-label="Toggle navigation"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen(!menuOpen)}
-              className="inline-flex items-center justify-center rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-900 focus:outline-none"
+              className="inline-flex items-center justify-center rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-900 focus:outline-hidden"
             >
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -226,7 +226,7 @@ const Header = ({ user, onLogout, darkMode, toggleTheme }) => {
                 <Link
                   to="/register"
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center justify-center rounded-xl bg-yellow-500 hover:bg-yellow-600 py-2.5 text-base font-bold text-white shadow-sm"
+                  className="flex items-center justify-center rounded-xl bg-yellow-500 hover:bg-yellow-600 py-2.5 text-base font-bold text-white shadow-xs"
                 >
                   Sign Up
                 </Link>

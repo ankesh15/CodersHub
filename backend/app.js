@@ -10,14 +10,11 @@ const { randomBytes } = require('crypto');
 const axios = require('axios');
 const User = require('./models/User');
 const { resolveGithubUser } = require('./lib/oauth');
+const { runtimeConfig } = require('./lib/config');
 
 function createApp({ store, databaseReady = () => mongoose.connection.readyState === 1 } = {}) {
   const app = express();
-  const production = process.env.NODE_ENV === 'production';
-  const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
-  if (production && (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32)) {
-    throw new Error('Production requires SESSION_SECRET with at least 32 characters.');
-  }
+  const { production, frontendUrl, backendUrl, oauthEnabled } = runtimeConfig();
   if (production && !store) throw new Error('Production requires a persistent session store.');
   if (production) app.set('trust proxy', 1);
   app.disable('x-powered-by');
@@ -49,13 +46,12 @@ function createApp({ store, databaseReady = () => mongoose.connection.readyState
     if (!databaseReady()) return done(null, false);
     try { done(null, await User.findById(id).select('-password')); } catch (error) { done(error); }
   });
-  const oauthEnabled = Boolean(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET);
   app.locals.oauthEnabled = oauthEnabled;
   if (oauthEnabled) {
     passport.use(new GitHubStrategy({
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: `${(process.env.BACKEND_URL || 'http://localhost:5000').replace(/\/$/, '')}/api/auth/github/callback`,
+      callbackURL: `${backendUrl}/api/auth/github/callback`,
       state: true,
     }, async (accessToken, refreshToken, profile, done) => {
       try {

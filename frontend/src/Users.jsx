@@ -64,7 +64,7 @@ const Users = () => {
                     </div>
                     <input
                         type="text"
-                        className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-[#0f1115] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 sm:text-sm transition-all"
+                        className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-[#0f1115] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-yellow-500 sm:text-sm transition-all"
                         placeholder="Search users..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -78,7 +78,7 @@ const Users = () => {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-[#0f1115] rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="bg-white dark:bg-[#0f1115] rounded-xl shadow-xs border border-gray-200 dark:border-gray-800 overflow-hidden">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 text-gray-500 dark:text-gray-400">
                         <Loader2 className="w-8 h-8 animate-spin mb-4 text-yellow-500" />
@@ -106,7 +106,7 @@ const Users = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center">
-                                                <div className="h-10 w-10 flex-shrink-0 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-500 flex items-center justify-center rounded-full font-bold text-sm">
+                                                <div className="h-10 w-10 shrink-0 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-500 flex items-center justify-center rounded-full font-bold text-sm">
                                                     {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                                                 </div>
                                                 <div className="ml-4">
