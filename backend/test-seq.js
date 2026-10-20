@@ -8,7 +8,6 @@ const userRoutes = require('./routes/user');
 dotenv.config();
 
 const mongoURI = process.env.MONGO_URI || process.env.MONGODB_URI;
-console.log('URI:', mongoURI ? mongoURI.replace(/:([^:@]{8})[^:@]*@/, ':****@') : 'undefined');
 
 mongoose.connect(mongoURI, { serverSelectionTimeoutMS: 5000 }).then(async () => {
   console.log('Connected');

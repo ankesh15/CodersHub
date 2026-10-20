@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   leetcode: { type: String },
   codeforces: { type: String },
   github: { type: String },
+  githubId: { type: String, unique: true, sparse: true },
   bookmarks: [{ type: String, default: [] }],
   achievements: [{ type: String, default: [] }],
   createdAt: { type: Date, default: Date.now }

@@ -1,237 +1,131 @@
 const express = require('express');
-const router = express.Router();
 const User = require('../models/User');
-const passport = require('passport');
 const bcrypt = require('bcryptjs');
+const { text, handle, password: validatePassword } = require('../lib/validation');
 
-// Register a new user with password
-router.post('/auth/register', async (req, res) => {
-  try {
-    const { name, email, profile, password, leetcode, codeforces, github } = req.body;
-    if (!name || !email || !profile || !password) {
-      return res.status(400).json({ error: 'Name, email, profile handle, and password are required.' });
-    }
-
-    // Check if user already exists
-    const existingEmail = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existingEmail) {
-      return res.status(400).json({ error: 'Email already registered.' });
-    }
-
-    const existingProfile = await User.findOne({ profile: profile.toLowerCase().trim() });
-    if (existingProfile) {
-      return res.status(400).json({ error: 'Profile handle already taken.' });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = new User({
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
-      profile: profile.toLowerCase().trim(),
-      password: hashedPassword,
-      leetcode: leetcode?.toLowerCase().trim() || '',
-      codeforces: codeforces?.toLowerCase().trim() || '',
-      github: github?.toLowerCase().trim() || '',
-      bookmarks: [],
-      achievements: []
+const publicFields = 'name profile leetcode codeforces github achievements createdAt';
+function privateUser(user) {
+  const result = user.toObject();
+  delete result.password;
+  delete result.githubId;
+  return result;
+}
+const db = (req, res, next) => req.app.locals.databaseReady() ? next() : res.status(503).json({ error: 'Database unavailable. Please try again later.' });
+const authenticated = (req, res, next) => {
+  const id = req.session.userId || req.user?._id;
+  if (!id) return res.status(401).json({ error: 'Login required.' });
+  req.accountId = id;
+  next();
+};
+function establishSession(req, user) {
+  return new Promise((resolve, reject) => {
+    req.session.regenerate(error => {
+      if (error) return reject(error);
+      req.session.userId = user._id.toString();
+      req.session.save(error => error ? reject(error) : resolve());
     });
-
-    await user.save();
-    
-    // Set user session
-    req.session.userId = user._id;
-    
-    // Omit password from output
-    const userResponse = user.toObject();
-    delete userResponse.password;
-
-    req.session.save((err) => {
-      if (err) {
-        return res.status(500).json({ error: 'Session save failed' });
-      }
-      res.status(201).json({ message: 'User registered successfully', user: userResponse });
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Login user
-router.post('/auth/login', async (req, res) => {
-  try {
-    const { loginId, password } = req.body; // loginId can be email or profile handle
-    if (!loginId || !password) {
-      return res.status(400).json({ error: 'Username/Email and password are required.' });
-    }
-
-    // Find user by email or profile
-    const user = await User.findOne({
-      $or: [
-        { email: loginId.toLowerCase().trim() },
-        { profile: loginId.toLowerCase().trim() }
-      ]
-    });
-
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email/profile or password.' });
-    }
-
-    // Verify password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email/profile or password.' });
-    }
-
-    // Set user session
-    req.session.userId = user._id;
-
-    // Omit password from output
-    const userResponse = user.toObject();
-    delete userResponse.password;
-
-    req.session.save((err) => {
-      if (err) {
-        return res.status(500).json({ error: 'Session save failed' });
-      }
-      res.status(200).json({ message: 'Login successful', user: userResponse });
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Fetch current session user
-router.get('/auth/me', async (req, res) => {
-  try {
-    if (req.session.userId) {
-      const user = await User.findById(req.session.userId).select('-password');
-      if (user) {
-        return res.json({ user });
-      }
-    }
-    // Fallback to passport (GitHub OAuth)
-    if (req.isAuthenticated() && req.user) {
-      // Find or create user from GitHub details
-      const githubUsername = req.user.username;
-      let user = await User.findOne({ github: githubUsername.toLowerCase() });
-      if (!user) {
-        // Create a shell user profile
-        const email = req.user.emails?.[0]?.value || `${githubUsername}@github.com`;
-        const name = req.user.displayName || githubUsername;
-        user = new User({
-          name,
-          email,
-          profile: githubUsername.toLowerCase(),
-          github: githubUsername.toLowerCase(),
-          bookmarks: [],
-          achievements: []
-        });
-        await user.save();
-      }
-      const userResponse = user.toObject();
-      delete userResponse.password;
-      return res.json({ user: userResponse });
-    }
-    res.status(401).json({ error: 'Not authenticated' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Logout user
-router.post('/auth/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to destroy session' });
-    }
-    res.clearCookie('connect.sid');
-    res.json({ message: 'Logged out successfully' });
   });
-});
-
-// Toggle Bookmark
-router.post('/user/bookmark', async (req, res) => {
-  try {
-    if (!req.session.userId) {
-      return res.status(401).json({ error: 'Login required to bookmark profiles.' });
-    }
-    const { targetProfile } = req.body;
-    if (!targetProfile) {
-      return res.status(400).json({ error: 'Target profile is required.' });
-    }
-
-    const user = await User.findById(req.session.userId);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    const index = user.bookmarks.indexOf(targetProfile);
-    if (index > -1) {
-      user.bookmarks.splice(index, 1); // Remove if exists
-    } else {
-      user.bookmarks.push(targetProfile); // Add if doesn't exist
-    }
-
-    await user.save();
-    res.json({ bookmarks: user.bookmarks });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Update profile usernames
-router.post('/user/update', async (req, res) => {
-  try {
-    if (!req.session.userId) {
-      return res.status(401).json({ error: 'Login required.' });
-    }
-    const { name, leetcode, codeforces, github } = req.body;
-
-    const user = await User.findById(req.session.userId);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    if (name) user.name = name;
-    if (leetcode !== undefined) user.leetcode = leetcode.toLowerCase().trim();
-    if (codeforces !== undefined) user.codeforces = codeforces.toLowerCase().trim();
-    if (github !== undefined) user.github = github.toLowerCase().trim();
-
-    await user.save();
-    const userResponse = user.toObject();
-    delete userResponse.password;
-    res.json({ message: 'Profile updated successfully', user: userResponse });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Fetch user by profile
-router.post('/user', async (req, res) => {
-  try {
-    const { profile } = req.body;
-    const user = await User.findOne({ profile: profile.toLowerCase().trim() }).select('-password');
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json(user);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// GitHub OAuth login
-router.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
-
-// GitHub OAuth callback
-router.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/' }), (req, res) => {
-  res.redirect('/dashboard');
-});
-
-// Leaderboard: Get all users sorted by createdAt (newest first)
-router.get('/users', async (req, res) => {
-  try {
-    const users = await User.find().select('-password').sort({ createdAt: -1 });
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-module.exports = router;
+}
+module.exports = passport => {
+  const router = express.Router();
+  router.post('/auth/register', async (req, res, next) => {
+    try {
+      const name = text(req.body.name, 'Name');
+      const email = text(req.body.email, 'Email', { max: 254 }).toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'A valid email is required.' });
+      const profile = handle(req.body.profile);
+      const password = validatePassword(req.body.password, true);
+      const handles = {};
+      for (const key of ['leetcode', 'codeforces', 'github']) handles[key] = handle(req.body[key], `${key} username`, false);
+      if (!req.app.locals.databaseReady()) return db(req, res, next);
+      if (await User.findOne({ $or: [{ email }, { profile }] })) return res.status(409).json({ error: 'Email or profile handle already registered.' });
+      const user = await User.create({ name, email, profile, password: await bcrypt.hash(password, 10), ...handles });
+      await establishSession(req, user);
+      res.status(201).json({ message: 'User registered successfully', user: privateUser(user) });
+    } catch (error) { next(error); }
+  });
+  router.post('/auth/login', async (req, res, next) => {
+    try {
+      const loginId = text(req.body.loginId, 'Username/Email', { max: 254 }).toLowerCase();
+      const password = validatePassword(req.body.password);
+      if (!req.app.locals.databaseReady()) return db(req, res, next);
+      const user = await User.findOne({ $or: [{ email: loginId }, { profile: loginId }] });
+      if (!user?.password || !await bcrypt.compare(password, user.password)) return res.status(401).json({ error: 'Invalid email/profile or password.' });
+      await establishSession(req, user);
+      res.json({ message: 'Login successful', user: privateUser(user) });
+    } catch (error) { next(error); }
+  });
+  router.get('/auth/me', async (req, res, next) => {
+    if (!req.session.userId && !req.user) return res.status(401).json({ error: 'Not authenticated' });
+    if (!req.app.locals.databaseReady()) return db(req, res, next);
+    try {
+      const user = req.user || await User.findById(req.session.userId).select('-password');
+      if (!user) return res.status(401).json({ error: 'Not authenticated' });
+      res.json({ user: privateUser(user) });
+    } catch (error) { next(error); }
+  });
+  router.post('/auth/logout', (req, res, next) => {
+    req.session.destroy(error => {
+      if (error) return next(error);
+      res.clearCookie('connect.sid', req.app.locals.cookieOptions);
+      res.json({ message: 'Logged out successfully' });
+    });
+  });
+  router.post('/user/bookmark', authenticated, async (req, res, next) => {
+    try {
+      const targetProfile = handle(req.body.targetProfile);
+      if (!req.app.locals.databaseReady()) return db(req, res, next);
+      const user = await User.findById(req.accountId);
+      if (!user) return res.status(401).json({ error: 'Not authenticated' });
+      // Use a single atomic update so concurrent toggles do not overwrite each other.
+      if (!user.bookmarks.includes(targetProfile) && !await User.exists({ profile: targetProfile })) return res.status(404).json({ error: 'Target profile not found.' });
+      const updated = await User.findOneAndUpdate({ _id: req.accountId }, [{ $set: { bookmarks: {
+        $cond: [ { $in: [targetProfile, { $ifNull: ['$bookmarks', []] }] },
+          { $setDifference: ['$bookmarks', [targetProfile]] },
+          { $concatArrays: [{ $ifNull: ['$bookmarks', []] }, [targetProfile]] } ],
+      } } }], { new: true });
+      res.json({ bookmarks: updated.bookmarks });
+    } catch (error) { next(error); }
+  });
+  router.post('/user/update', authenticated, async (req, res, next) => {
+    try {
+      const changes = {};
+      if (req.body.name !== undefined) changes.name = text(req.body.name, 'Name');
+      for (const key of ['leetcode', 'codeforces', 'github']) {
+        if (req.body[key] !== undefined) changes[key] = handle(req.body[key], `${key} username`, false);
+      }
+      if (!req.app.locals.databaseReady()) return db(req, res, next);
+      const user = await User.findByIdAndUpdate(req.accountId, { $set: changes }, { new: true, runValidators: true });
+      if (!user) return res.status(401).json({ error: 'Not authenticated' });
+      res.json({ message: 'Profile updated successfully', user: privateUser(user) });
+    } catch (error) { next(error); }
+  });
+  router.post('/user', async (req, res, next) => {
+    try {
+      const profile = handle(req.body.profile);
+      if (!req.app.locals.databaseReady()) return db(req, res, next);
+      const user = await User.findOne({ profile }).select(publicFields);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      res.json(user);
+    } catch (error) { next(error); }
+  });
+  const oauthReady = (req, res, next) => {
+    if (!req.app.locals.oauthEnabled) return res.status(503).json({ error: 'GitHub OAuth is not configured.' });
+    return db(req, res, next);
+  };
+  router.get('/auth/github', oauthReady, passport.authenticate('github', { scope: ['user:email'] }));
+  router.get('/auth/github/callback', oauthReady, (req, res, next) => {
+    passport.authenticate('github', (error, user) => {
+      if (error || !user) return res.redirect(`${req.app.locals.frontendUrl}/login?oauth=failed`);
+      req.logIn(user, error => {
+        if (error) return next(error);
+        req.session.userId = user._id.toString();
+        req.session.save(error => error ? next(error) : res.redirect(`${req.app.locals.frontendUrl}/dashboard`));
+      });
+    })(req, res, next);
+  });
+  router.get('/users', db, async (req, res, next) => {
+    try { res.json(await User.find().select(publicFields).sort({ createdAt: -1 })); } catch (error) { next(error); }
+  });
+  return router;
+};

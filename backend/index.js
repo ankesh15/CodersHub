@@ -1,83 +1,28 @@
-// Load environment variables immediately
-require('dotenv').config();
-
-const express = require('express');
-const cors = require('cors');
+require('dotenv').config({ path: require('path').join(__dirname, '.env'), quiet: true });
 const mongoose = require('mongoose');
-const helmet = require('helmet');
-const userRoutes = require('./routes/user');
-const platformsRoutes = require('./routes/platforms');
-const session = require('express-session');
-const passport = require('passport');
-const GitHubStrategy = require('passport-github2').Strategy;
-
-const app = express();
-const PORT = process.env.PORT || 5000;
-
-if (process.env.NODE_ENV === 'production') {
-  app.set('trust proxy', 1);
+const MongoStore = require('connect-mongo');
+const { createApp } = require('./app');
+mongoose.set('bufferCommands', false);
+async function start() {
+  let store;
+  const uri = process.env.MONGO_URI || process.env.MONGODB_URI;
+  if (uri) {
+    try {
+      await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
+      store = MongoStore.create({ client: mongoose.connection.getClient(), dbName: mongoose.connection.name, collectionName: 'sessions' });
+      store.on('error', () => console.error('Session store unavailable.'));
+      console.log('MongoDB connected.');
+    } catch {
+      console.error('MongoDB unavailable. Check MONGO_URI, DNS, network access and database credentials.');
+    }
+  } else console.error('Set MONGO_URI to enable database-backed features.');
+  if (!store && process.env.NODE_ENV === 'production') throw new Error('Production startup requires MongoDB.');
+  const app = createApp({ store });
+  const server = app.listen(process.env.PORT || 5000, () => console.log(`Server is running on port ${server.address().port}`));
+  const stop = () => server.close(async () => { await mongoose.disconnect(); process.exit(0); });
+  process.once('SIGTERM', stop);
+  process.once('SIGINT', stop);
+  return server;
 }
-
-app.use(helmet());
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
-}));
-app.use(express.json());
-
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'fallback-secret-for-development-only',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-  }
-}));
-app.use(passport.initialize());
-app.use(passport.session());
-
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
-passport.deserializeUser((obj, done) => {
-  done(null, obj);
-});
-
-passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID || 'GITHUB_CLIENT_ID',
-  clientSecret: process.env.GITHUB_CLIENT_SECRET || 'GITHUB_CLIENT_SECRET',
-  callbackURL: process.env.BACKEND_URL 
-    ? `${process.env.BACKEND_URL.replace(/\/$/, '')}/api/auth/github/callback`
-    : 'http://localhost:5000/api/auth/github/callback'
-},
-(accessToken, refreshToken, profile, done) => {
-  // You can save the user to your DB here
-  return done(null, profile);
-}
-));
-
-// Health check route
-app.get('/', (req, res) => {
-  res.send('Coders Profile Hub Backend is running!');
-});
-
-// MongoDB connection
-const mongoURI = process.env.MONGO_URI || process.env.MONGODB_URI;
-console.log('Attempting to connect to MongoDB with URI:', mongoURI ? mongoURI.replace(/:([^:@]{8})[^:@]*@/, ':****@') : 'undefined');
-
-if (!mongoURI) {
-  console.error('ERROR: MONGO_URI is not defined in environment variables.');
-  process.exit(1);
-}
-
-mongoose.connect(mongoURI, { serverSelectionTimeoutMS: 5000 })
-.then(() => console.log('MongoDB Atlas connection established successfully.'))
-.catch((err) => console.error('MongoDB Atlas connection error:', err));
-
-app.use('/api', userRoutes);
-app.use('/api', platformsRoutes);
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-}); 
+if (require.main === module) start().catch(error => { console.error(error.message); process.exitCode = 1; });
+module.exports = { start };
